@@ -393,6 +393,65 @@
             margin-bottom: 10px;
         }
 
+        .drop-zone {
+            border: 3px dashed var(--input-border);
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            background: var(--surface-solid);
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+
+        .drop-zone.drag-over {
+            transform: scale(1.01);
+            box-shadow: 0 0 20px var(--accent-shadow);
+        }
+
+        .drop-zone h3 { color: var(--accent); margin-bottom: 8px; }
+        .drop-zone p { color: var(--text-muted); font-size: 14px; margin-bottom: 6px; }
+        .drop-zone small { color: var(--text-light); font-size: 12px; }
+
+        .file-input-hidden { display: none; }
+
+        .loaded-files {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .loaded-file {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--green-bg);
+            color: var(--green);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .separator::before, .separator::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--input-border);
+        }
+
         @media print {
             body { background: white !important; }
             .tabs, .btn, .delete-btn, .privacy-banner, .tab[onclick] { display: none !important; }
@@ -432,8 +491,26 @@
             <div class="card">
                 <h2>Subir Conversaciones de Claude</h2>
                 <p style="margin: 10px 0 20px; color: var(--text-muted);">
-                    Copia y pega tus conversaciones con Claude para analisis completo.
+                    Carga archivos desde tu USB, disco, o carpeta &mdash; o pega el texto directo.
                 </p>
+
+                <!-- File upload zone -->
+                <div class="drop-zone" id="dropZone"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)"
+                     onclick="document.getElementById('fileInput').click()">
+                    <h3>Arrastra archivos aqui o haz click para seleccionar</h3>
+                    <p>Carga chats desde tu USB (D:, E:) o cualquier carpeta</p>
+                    <small>Acepta: .txt, .md, .json, .log, .csv, .html &mdash; Multiples archivos a la vez</small>
+                    <input type="file" id="fileInput" class="file-input-hidden"
+                           accept=".txt,.md,.json,.log,.csv,.html,.text"
+                           multiple
+                           onchange="handleFileSelect(this.files)">
+                </div>
+                <div class="loaded-files" id="loadedFiles"></div>
+
+                <div class="separator">o pega el texto manualmente</div>
 
                 <div>
                     <label style="display: block; margin-bottom: 10px; font-weight: 600;">Titulo del Chat:</label>
@@ -452,7 +529,7 @@
                     <div class="char-count" id="charCount">0 / 500,000 caracteres</div>
                 </div>
 
-                <button class="btn" onclick="addChat()">Agregar Chat</button>
+                <button class="btn" onclick="addChat()">Agregar Chat Manual</button>
 
                 <div id="uploadStatus" class="hidden"></div>
             </div>
@@ -564,11 +641,24 @@
                 <div style="margin-bottom: 30px;">
                     <h3>Inicio Rapido</h3>
                     <ol style="margin-left: 20px; line-height: 1.8;">
-                        <li>Copia tus chats de Claude y pegalos en "Cargar Chats"</li>
+                        <li><strong>Desde USB/disco:</strong> Arrastra archivos al area de carga, o haz click para navegar a tu USB (D:, E:, etc.)</li>
+                        <li><strong>Pegar texto:</strong> Copia chats de Claude y pegalos en el textarea</li>
                         <li>Ve a "Procesar" y ejecuta el analisis</li>
                         <li>Revisa los resultados: proyectos, temas, tecnologias</li>
                         <li>Exporta en JSON o CSV si necesitas</li>
                     </ol>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3>Cargar desde USB o Disco</h3>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li>Soporta archivos: .txt, .md, .json, .log, .csv, .html</li>
+                        <li>Puedes seleccionar hasta 50 archivos a la vez</li>
+                        <li>Maximo 2MB por archivo (chats muy largos se recortan a 500K caracteres)</li>
+                        <li>Archivos JSON se parsean automaticamente (formato Claude, ChatGPT, etc.)</li>
+                        <li>Los archivos se leen en tu navegador &mdash; nunca se suben a ningun servidor</li>
+                        <li>Tambien puedes arrastrar carpetas enteras al area de carga</li>
+                    </ul>
                 </div>
 
                 <div style="margin-bottom: 30px;">
@@ -632,6 +722,205 @@
             document.getElementById(tabName).classList.add('active');
             btn.classList.add('active');
             btn.setAttribute('aria-selected', 'true');
+        }
+
+        // ── File upload: drag & drop + file picker ──
+        var ALLOWED_EXTENSIONS = ['.txt', '.md', '.json', '.log', '.csv', '.html', '.text'];
+        var MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB per file
+        var MAX_FILES_AT_ONCE = 50;
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropZone').classList.remove('drag-over');
+            var files = e.dataTransfer.files;
+            if (files.length > 0) handleFileSelect(files);
+        }
+
+        function handleFileSelect(files) {
+            if (!files || files.length === 0) return;
+
+            if (files.length > MAX_FILES_AT_ONCE) {
+                showStatus('Maximo ' + MAX_FILES_AT_ONCE + ' archivos a la vez. Seleccionaste ' + files.length, 'error');
+                return;
+            }
+
+            var loaded = 0;
+            var skipped = 0;
+            var errors = [];
+            var totalFiles = files.length;
+            var filesDiv = document.getElementById('loadedFiles');
+            filesDiv.innerHTML = '';
+
+            Array.from(files).forEach(function(file) {
+                // Check extension
+                var name = file.name.toLowerCase();
+                var validExt = ALLOWED_EXTENSIONS.some(function(ext) { return name.endsWith(ext); });
+                if (!validExt) {
+                    skipped++;
+                    errors.push(file.name + ' (tipo no soportado)');
+                    checkDone();
+                    return;
+                }
+
+                // Check size
+                if (file.size > MAX_FILE_SIZE) {
+                    skipped++;
+                    errors.push(file.name + ' (excede 2MB)');
+                    checkDone();
+                    return;
+                }
+
+                if (file.size === 0) {
+                    skipped++;
+                    errors.push(file.name + ' (archivo vacio)');
+                    checkDone();
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var content = e.target.result;
+
+                    // If JSON, try to extract chat content
+                    if (name.endsWith('.json')) {
+                        content = parseJsonChat(content, file.name);
+                    }
+
+                    if (!content || content.trim().length === 0) {
+                        skipped++;
+                        errors.push(file.name + ' (sin contenido legible)');
+                        checkDone();
+                        return;
+                    }
+
+                    // Strip HTML tags if .html file
+                    if (name.endsWith('.html')) {
+                        content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+                        content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
+                        content = content.replace(/<[^>]+>/g, ' ');
+                        content = content.replace(/\s{2,}/g, ' ').trim();
+                    }
+
+                    var title = file.name.replace(/\.[^.]+$/, '');
+
+                    var chat = {
+                        id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),
+                        title: title,
+                        content: content.slice(0, 500000),
+                        wordCount: content.split(/\s+/).filter(Boolean).length,
+                        addedAt: new Date().toISOString(),
+                        source: 'file',
+                        fileName: file.name,
+                        fileSize: file.size
+                    };
+
+                    chatData.chats.push(chat);
+                    loaded++;
+
+                    // Show loaded file
+                    var fileEl = document.createElement('div');
+                    fileEl.className = 'loaded-file';
+                    fileEl.innerHTML = '<span>' + esc(file.name) + ' (' + formatSize(file.size) + ')</span><span>Cargado</span>';
+                    filesDiv.appendChild(fileEl);
+
+                    checkDone();
+                };
+
+                reader.onerror = function() {
+                    skipped++;
+                    errors.push(file.name + ' (error de lectura)');
+                    checkDone();
+                };
+
+                reader.readAsText(file, 'UTF-8');
+
+                function checkDone() {
+                    if (loaded + skipped === totalFiles) {
+                        chatData.analysis = null;
+                        saveData();
+                        updateChatsList();
+                        updateStats();
+
+                        var msg = loaded + ' archivo(s) cargado(s)';
+                        if (skipped > 0) msg += ', ' + skipped + ' omitido(s)';
+                        showStatus(msg, loaded > 0 ? 'success' : 'error');
+
+                        if (errors.length > 0) {
+                            var errDiv = document.createElement('div');
+                            errDiv.style.cssText = 'font-size:12px;color:var(--text-muted);margin-top:8px;';
+                            errDiv.textContent = 'Omitidos: ' + errors.join(', ');
+                            filesDiv.appendChild(errDiv);
+                        }
+
+                        // Reset file input so same files can be re-selected
+                        document.getElementById('fileInput').value = '';
+                    }
+                }
+            });
+        }
+
+        function parseJsonChat(raw, fileName) {
+            try {
+                var data = JSON.parse(raw);
+
+                // Claude export format: array of messages
+                if (Array.isArray(data)) {
+                    return data.map(function(msg) {
+                        var role = msg.role || msg.sender || msg.type || 'unknown';
+                        var text = msg.content || msg.text || msg.message || '';
+                        if (typeof text === 'object') text = JSON.stringify(text);
+                        return role + ': ' + text;
+                    }).join('\n\n');
+                }
+
+                // Object with messages array
+                if (data.messages && Array.isArray(data.messages)) {
+                    return data.messages.map(function(msg) {
+                        var role = msg.role || msg.sender || 'unknown';
+                        var text = msg.content || msg.text || msg.message || '';
+                        if (typeof text === 'object') text = JSON.stringify(text);
+                        return role + ': ' + text;
+                    }).join('\n\n');
+                }
+
+                // Object with chat_messages
+                if (data.chat_messages && Array.isArray(data.chat_messages)) {
+                    return data.chat_messages.map(function(msg) {
+                        var role = msg.sender || msg.role || 'unknown';
+                        var text = msg.text || msg.content || '';
+                        return role + ': ' + text;
+                    }).join('\n\n');
+                }
+
+                // Single message object
+                if (data.content || data.text) {
+                    return data.content || data.text;
+                }
+
+                // Fallback: stringify the whole thing
+                return JSON.stringify(data, null, 2);
+            } catch (e) {
+                return raw;
+            }
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         // ── Character count ──
@@ -709,7 +998,12 @@
 
                 var meta = document.createElement('div');
                 meta.style.cssText = 'font-size:0.9em;color:var(--text-muted);margin-top:5px;';
-                meta.textContent = chat.wordCount.toLocaleString() + ' palabras';
+                var metaText = chat.wordCount.toLocaleString() + ' palabras';
+                if (chat.source === 'file') {
+                    metaText += ' · Archivo: ' + (chat.fileName || 'desconocido');
+                    if (chat.fileSize) metaText += ' (' + formatSize(chat.fileSize) + ')';
+                }
+                meta.textContent = metaText;
                 info.appendChild(meta);
 
                 var btn = document.createElement('button');
