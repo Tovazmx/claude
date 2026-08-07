@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Chats Claude - 100% Local</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f0f2f5;
+            --bg-grad-1: #667eea;
+            --bg-grad-2: #764ba2;
+            --surface: rgba(255, 255, 255, 0.95);
+            --surface-solid: #ffffff;
+            --text: #333333;
+            --text-muted: #666666;
+            --text-light: #999999;
+            --accent: #FF6B35;
+            --accent-hover: #e55a25;
+            --accent-shadow: rgba(255, 107, 53, 0.3);
+            --accent-bg: rgba(255, 107, 53, 0.05);
+            --accent-border: rgba(255, 107, 53, 0.2);
+            --green: #198754;
+            --green-bg: #e6f7e6;
+            --red: #d63384;
+            --red-bg: #ffe6e6;
+            --blue: #0d6efd;
+            --input-border: #e1e1e1;
+            --input-focus: #FF6B35;
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --stat-grad-1: #667eea;
+            --stat-grad-2: #764ba2;
+            --stat-text: #ffffff;
+            --chat-item-bg: #f8f9fa;
+            --chat-item-border: #FF6B35;
+            --badge-bg: #333333;
+            --badge-text: #ffffff;
+            --tab-bg: #f0f0f0;
+            --tab-text: #333333;
+            --tech-bg: #d1ecf1;
+            --tech-text: #0c5460;
+            --status-bg: #e9ecef;
+            --focus-bg: #d4edda;
+            --focus-text: #155724;
+            --importance-high: #28a745;
+            --importance-med: #ffc107;
+            --importance-low: #6c757d;
+            --privacy-bg: #e8f5e9;
+            --privacy-border: #4caf50;
+            --privacy-text: #2e7d32;
+            --result-item-bg: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #1a1a2e;
+                --bg-grad-1: #2d2b55;
+                --bg-grad-2: #3b1f5e;
+                --surface: rgba(30, 30, 50, 0.95);
+                --surface-solid: #1e1e32;
+                --text: #e0e0e0;
+                --text-muted: #a0a0b0;
+                --text-light: #707080;
+                --accent: #ff8c5a;
+                --accent-hover: #ff7a42;
+                --accent-shadow: rgba(255, 140, 90, 0.3);
+                --accent-bg: rgba(255, 140, 90, 0.08);
+                --accent-border: rgba(255, 140, 90, 0.25);
+                --green: #4caf50;
+                --green-bg: rgba(76, 175, 80, 0.12);
+                --red: #ef5350;
+                --red-bg: rgba(239, 83, 80, 0.12);
+                --blue: #64b5f6;
+                --input-border: #3a3a50;
+                --input-focus: #ff8c5a;
+                --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                --stat-grad-1: #3d3b6e;
+                --stat-grad-2: #4a2870;
+                --stat-text: #e0e0e0;
+                --chat-item-bg: #252540;
+                --chat-item-border: #ff8c5a;
+                --badge-bg: #2a2a45;
+                --badge-text: #c0c0d0;
+                --tab-bg: #2a2a45;
+                --tab-text: #c0c0d0;
+                --tech-bg: rgba(100, 181, 246, 0.15);
+                --tech-text: #90caf9;
+                --status-bg: rgba(160, 160, 176, 0.15);
+                --focus-bg: rgba(76, 175, 80, 0.12);
+                --focus-text: #81c784;
+                --importance-high: #66bb6a;
+                --importance-med: #ffca28;
+                --importance-low: #9e9e9e;
+                --privacy-bg: rgba(76, 175, 80, 0.1);
+                --privacy-border: #4caf50;
+                --privacy-text: #81c784;
+                --result-item-bg: #252540;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #1a1a2e;
+            --bg-grad-1: #2d2b55;
+            --bg-grad-2: #3b1f5e;
+            --surface: rgba(30, 30, 50, 0.95);
+            --surface-solid: #1e1e32;
+            --text: #e0e0e0;
+            --text-muted: #a0a0b0;
+            --text-light: #707080;
+            --accent: #ff8c5a;
+            --accent-hover: #ff7a42;
+            --accent-shadow: rgba(255, 140, 90, 0.3);
+            --accent-bg: rgba(255, 140, 90, 0.08);
+            --accent-border: rgba(255, 140, 90, 0.25);
+            --green: #4caf50;
+            --green-bg: rgba(76, 175, 80, 0.12);
+            --red: #ef5350;
+            --red-bg: rgba(239, 83, 80, 0.12);
+            --blue: #64b5f6;
+            --input-border: #3a3a50;
+            --input-focus: #ff8c5a;
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --stat-grad-1: #3d3b6e;
+            --stat-grad-2: #4a2870;
+            --stat-text: #e0e0e0;
+            --chat-item-bg: #252540;
+            --chat-item-border: #ff8c5a;
+            --badge-bg: #2a2a45;
+            --badge-text: #c0c0d0;
+            --tab-bg: #2a2a45;
+            --tab-text: #c0c0d0;
+            --tech-bg: rgba(100, 181, 246, 0.15);
+            --tech-text: #90caf9;
+            --status-bg: rgba(160, 160, 176, 0.15);
+            --focus-bg: rgba(76, 175, 80, 0.12);
+            --focus-text: #81c784;
+            --importance-high: #66bb6a;
+            --importance-med: #ffca28;
+            --importance-low: #9e9e9e;
+            --privacy-bg: rgba(76, 175, 80, 0.1);
+            --privacy-border: #4caf50;
+            --privacy-text: #81c784;
+            --result-item-bg: #252540;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .privacy-banner {
+            background: var(--privacy-bg);
+            border: 1px solid var(--privacy-border);
+            color: var(--privacy-text);
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .privacy-banner strong { font-weight: 700; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--surface);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--header-shadow);
+        }
+
+        .header h1 { color: var(--accent); font-size: 2.5em; margin-bottom: 10px; }
+        .claude-icon { font-size: 3em; margin-bottom: 15px; }
+
+        .card {
+            background: var(--surface);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+
+        .tab {
+            padding: 12px 24px;
+            background: var(--tab-bg);
+            color: var(--tab-text);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-shadow);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+            background: var(--surface-solid);
+            color: var(--text);
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px var(--accent-bg);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--accent), var(--accent-hover));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--accent-shadow);
+        }
+
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--red), #c2185b);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, var(--stat-grad-1), var(--stat-grad-2));
+            color: var(--stat-text);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number { font-size: 2em; font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+
+        .chat-item {
+            background: var(--chat-item-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--chat-item-border);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--tab-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .analysis-section {
+            background: var(--accent-bg);
+            border: 1px solid var(--accent-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .analysis-title { color: var(--accent); font-size: 1.3em; font-weight: bold; margin-bottom: 15px; }
+
+        .error { background: var(--red-bg); color: var(--red); padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .success { background: var(--green-bg); color: var(--green); padding: 15px; border-radius: 10px; margin: 10px 0; }
+
+        .hidden { display: none; }
+
+        .delete-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        .delete-btn:hover { opacity: 0.85; }
+
+        .result-item {
+            background: var(--result-item-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tech-tag {
+            background: var(--tech-bg);
+            color: var(--tech-text);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+
+        .status-tag {
+            background: var(--status-bg);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+
+        .focus-tag {
+            background: var(--focus-bg);
+            color: var(--focus-text);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+        }
+
+        .freq-badge {
+            background: var(--accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-light);
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        @media print {
+            body { background: white !important; }
+            .tabs, .btn, .delete-btn, .privacy-banner, .tab[onclick] { display: none !important; }
+            .tab-content { display: block !important; }
+            .card { box-shadow: none; border: 1px solid #ddd; }
+            .stat-card { background: #667eea !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="privacy-banner">
+            <strong>100% Privado</strong> &mdash; Tus datos nunca salen de tu navegador. No hay servidor, no hay API, no hay tracking. Todo el analisis se hace localmente en tu maquina.
+        </div>
+
+        <div class="header">
+            <div class="claude-icon">&#x1F916;</div>
+            <h1>Analizador de Chats Claude</h1>
+            <p>Analiza tus conversaciones de Claude AI &mdash; 100% offline y privado</p>
+            <small style="color: var(--text-muted);">Version 2.0 - Analisis Local</small>
+        </div>
+
+        <div class="tabs" role="tablist">
+            <button class="tab active" role="tab" aria-selected="true" data-tab="upload" onclick="showTab('upload', this)">Cargar Chats</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="process" onclick="showTab('process', this)">Procesar</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="results" onclick="showTab('results', this)">Resultados</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="export" onclick="showTab('export', this)">Exportar</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="help" onclick="showTab('help', this)">Ayuda</button>
+        </div>
+
+        <div id="upload" class="tab-content active" role="tabpanel">
+            <div class="card">
+                <h2>Subir Conversaciones de Claude</h2>
+                <p style="margin: 10px 0 20px; color: var(--text-muted);">
+                    Copia y pega tus conversaciones con Claude para analisis completo.
+                </p>
+
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Titulo del Chat:</label>
+                    <input type="text" id="chatTitle" placeholder="ej: Proyecto Web, Analisis de datos..." maxlength="200">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Contenido de la Conversacion:</label>
+                    <textarea
+                        id="chatInput"
+                        placeholder="Copia toda tu conversacion con Claude aqui...&#10;&#10;Incluye tanto tus mensajes como las respuestas de Claude.&#10;&#10;Ejemplo:&#10;Human: Puedes ayudarme con Python?&#10;Claude: Por supuesto! Te ayudo con Python..."
+                        rows="12"
+                        maxlength="500000"
+                        oninput="updateCharCount()"
+                    ></textarea>
+                    <div class="char-count" id="charCount">0 / 500,000 caracteres</div>
+                </div>
+
+                <button class="btn" onclick="addChat()">Agregar Chat</button>
+
+                <div id="uploadStatus" class="hidden"></div>
+            </div>
+
+            <div class="card" id="chatsList" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Chats Cargados</h3>
+                    <button class="btn btn-danger btn-small" onclick="clearAllChats()">Borrar Todo</button>
+                </div>
+                <div id="chatsContainer"></div>
+            </div>
+        </div>
+
+        <div id="process" class="tab-content" role="tabpanel">
+            <div class="card">
+                <h2>Procesar Analisis</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalChats">0</div>
+                        <div>Chats Cargados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalWords">0</div>
+                        <div>Palabras Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalMessages">0</div>
+                        <div>Mensajes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="topicsFound">0</div>
+                        <div>Temas</div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="startProcessing()" id="processBtn">Iniciar Analisis Local</button>
+
+                <div id="processingProgress" class="hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <span id="progressText">Procesando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="results" class="tab-content" role="tabpanel">
+            <div class="card">
+                <h2>Resultados del Analisis</h2>
+                <div id="analysisResults">
+                    <p style="text-align: center; color: var(--text-muted); padding: 40px;">
+                        Los resultados apareceran aqui despues del analisis
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="export" class="tab-content" role="tabpanel">
+            <div class="card">
+                <h2>Exportar Resultados</h2>
+                <p style="margin-bottom: 20px; color: var(--text-muted);">Los archivos se generan en tu navegador. Nada se sube a internet.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
+                        <h3>Reporte JSON</h3>
+                        <p style="margin: 15px 0; color: var(--text-muted);">Analisis completo estructurado</p>
+                        <button class="btn" onclick="exportJSON()">Descargar JSON</button>
+                    </div>
+
+                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
+                        <h3>Datos CSV</h3>
+                        <p style="margin: 15px 0; color: var(--text-muted);">Para analisis en Excel</p>
+                        <button class="btn" onclick="exportCSV()">Exportar CSV</button>
+                    </div>
+
+                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
+                        <h3>Imprimir</h3>
+                        <p style="margin: 15px 0; color: var(--text-muted);">Version para imprimir o PDF</p>
+                        <button class="btn" onclick="window.print()">Imprimir</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; border: 2px dashed var(--red); border-radius: 15px; text-align: center;">
+                    <h3>Borrar Todos los Datos</h3>
+                    <p style="margin: 15px 0; color: var(--text-muted);">Elimina todos los chats y analisis guardados en tu navegador</p>
+                    <button class="btn btn-danger" onclick="clearAllData()">Borrar Todo Permanentemente</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="help" class="tab-content" role="tabpanel">
+            <div class="card">
+                <h2>Guia de Uso</h2>
+
+                <div style="margin-bottom: 30px;">
+                    <h3>Privacidad</h3>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li><strong>Sin servidor:</strong> No hay backend ni API. Todo corre en JavaScript en tu navegador.</li>
+                        <li><strong>Sin red:</strong> Puedes desconectar internet y la app sigue funcionando.</li>
+                        <li><strong>localStorage:</strong> Tus datos se guardan solo en tu navegador, en tu maquina.</li>
+                        <li><strong>Borrado total:</strong> El boton "Borrar Todo" elimina todo de tu navegador.</li>
+                        <li><strong>Sin tracking:</strong> No hay Google Analytics, cookies de terceros, ni telemetria.</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3>Inicio Rapido</h3>
+                    <ol style="margin-left: 20px; line-height: 1.8;">
+                        <li>Copia tus chats de Claude y pegalos en "Cargar Chats"</li>
+                        <li>Ve a "Procesar" y ejecuta el analisis</li>
+                        <li>Revisa los resultados: proyectos, temas, tecnologias</li>
+                        <li>Exporta en JSON o CSV si necesitas</li>
+                    </ol>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3>Que Analiza</h3>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li><strong>Proyectos:</strong> Detecta proyectos por keywords como "proyecto", "app", "sistema", "crear", "desarrollar"</li>
+                        <li><strong>Tecnologias:</strong> Identifica 80+ lenguajes, frameworks y herramientas mencionados</li>
+                        <li><strong>Temas:</strong> Clasifica conversaciones por area (web, datos, IA, devops, etc.)</li>
+                        <li><strong>Patrones:</strong> Tipo de consultas (codigo, explicacion, debug, diseno)</li>
+                        <li><strong>Estadisticas:</strong> Palabras, mensajes, ratio pregunta/respuesta</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Security: escape HTML to prevent XSS ──
+        function esc(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ── Persistence: localStorage ──
+        const STORAGE_KEY = 'claude-analyzer-data';
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) { console.error('Error loading data:', e); }
+            return { chats: [], analysis: null };
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(chatData));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    showStatus('Almacenamiento lleno. Borra algunos chats para continuar.', 'error');
+                }
+            }
+        }
+
+        let chatData = loadData();
+
+        // ── Tab management (fixed: uses currentTarget) ──
+        function showTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+            });
+            document.getElementById(tabName).classList.add('active');
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+        }
+
+        // ── Character count ──
+        function updateCharCount() {
+            var input = document.getElementById('chatInput');
+            var count = document.getElementById('charCount');
+            var len = input.value.length;
+            count.textContent = len.toLocaleString() + ' / 500,000 caracteres';
+            if (len > 450000) count.style.color = 'var(--red)';
+            else count.style.color = 'var(--text-light)';
+        }
+
+        // ── Add chat ──
+        function addChat() {
+            var title = document.getElementById('chatTitle').value.trim();
+            var content = document.getElementById('chatInput').value.trim();
+
+            if (!title || !content) {
+                showStatus('Completa el titulo y contenido del chat', 'error');
+                return;
+            }
+
+            if (content.length > 500000) {
+                showStatus('El contenido excede 500,000 caracteres. Divide el chat en partes.', 'error');
+                return;
+            }
+
+            var chat = {
+                id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),
+                title: title,
+                content: content,
+                wordCount: content.split(/\s+/).filter(Boolean).length,
+                addedAt: new Date().toISOString()
+            };
+
+            chatData.chats.push(chat);
+            chatData.analysis = null;
+            saveData();
+            updateChatsList();
+            updateStats();
+
+            document.getElementById('chatTitle').value = '';
+            document.getElementById('chatInput').value = '';
+            updateCharCount();
+
+            showStatus('Chat "' + esc(title) + '" agregado', 'success');
+        }
+
+        // ── Update chats list ──
+        function updateChatsList() {
+            var container = document.getElementById('chatsContainer');
+            var listDiv = document.getElementById('chatsList');
+
+            if (chatData.chats.length === 0) {
+                listDiv.style.display = 'none';
+                return;
+            }
+
+            listDiv.style.display = 'block';
+            container.innerHTML = '';
+
+            chatData.chats.forEach(function(chat, index) {
+                var div = document.createElement('div');
+                div.className = 'chat-item';
+
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+
+                var info = document.createElement('div');
+                info.style.flex = '1';
+
+                var titleEl = document.createElement('strong');
+                titleEl.textContent = (index + 1) + '. ' + chat.title;
+                info.appendChild(titleEl);
+
+                var meta = document.createElement('div');
+                meta.style.cssText = 'font-size:0.9em;color:var(--text-muted);margin-top:5px;';
+                meta.textContent = chat.wordCount.toLocaleString() + ' palabras';
+                info.appendChild(meta);
+
+                var btn = document.createElement('button');
+                btn.className = 'delete-btn';
+                btn.textContent = 'Borrar';
+                btn.setAttribute('aria-label', 'Borrar chat ' + chat.title);
+                btn.onclick = function() { removeChat(chat.id); };
+
+                row.appendChild(info);
+                row.appendChild(btn);
+                div.appendChild(row);
+                container.appendChild(div);
+            });
+        }
+
+        // ── Remove chat ──
+        function removeChat(chatId) {
+            if (!confirm('Eliminar este chat?')) return;
+            chatData.chats = chatData.chats.filter(function(c) { return c.id !== chatId; });
+            chatData.analysis = null;
+            saveData();
+            updateChatsList();
+            updateStats();
+        }
+
+        // ── Clear all ──
+        function clearAllChats() {
+            if (!confirm('Borrar TODOS los chats cargados?')) return;
+            chatData.chats = [];
+            chatData.analysis = null;
+            saveData();
+            updateChatsList();
+            updateStats();
+        }
+
+        function clearAllData() {
+            if (!confirm('Esto borra TODOS tus datos permanentemente. Continuar?')) return;
+            chatData = { chats: [], analysis: null };
+            localStorage.removeItem(STORAGE_KEY);
+            updateChatsList();
+            updateStats();
+            document.getElementById('analysisResults').innerHTML =
+                '<p style="text-align:center;color:var(--text-muted);padding:40px;">Datos borrados</p>';
+            showStatus('Todos los datos han sido eliminados de tu navegador', 'success');
+        }
+
+        // ── Stats ──
+        function updateStats() {
+            document.getElementById('totalChats').textContent = chatData.chats.length;
+            document.getElementById('totalWords').textContent =
+                chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0).toLocaleString();
+
+            var totalMsgs = 0;
+            chatData.chats.forEach(function(c) {
+                totalMsgs += (c.content.match(/\b(Human|Usuario|User|Claude|Assistant)\s*:/gi) || []).length;
+            });
+            document.getElementById('totalMessages').textContent = totalMsgs;
+
+            var topics = chatData.analysis && chatData.analysis.mainTopics ? chatData.analysis.mainTopics.length : 0;
+            document.getElementById('topicsFound').textContent = topics;
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  LOCAL ANALYSIS ENGINE — no API, no network, 100% JS
+        // ══════════════════════════════════════════════════════
+
+        var TECH_PATTERNS = {
+            'Python': /\bpython\b/i,
+            'JavaScript': /\bjavascript\b|\bJS\b|\bnode\.?js\b/i,
+            'TypeScript': /\btypescript\b|\bTS\b/i,
+            'React': /\breact\b|\bjsx\b|\btsx\b/i,
+            'Vue': /\bvue\.?js?\b|\bvuex\b|\bnuxt\b/i,
+            'Angular': /\bangular\b/i,
+            'Next.js': /\bnext\.?js\b/i,
+            'HTML': /\bhtml\b|\bhtml5\b/i,
+            'CSS': /\bcss\b|\bcss3\b|\bsass\b|\bscss\b|\btailwind\b|\bbootstrap\b/i,
+            'SQL': /\bsql\b|\bmysql\b|\bpostgres\b|\bsqlite\b|\bmariadb\b/i,
+            'MongoDB': /\bmongo\b|\bmongodb\b|\bmongoose\b/i,
+            'Docker': /\bdocker\b|\bcontainer\b|\bdockerfile\b/i,
+            'Git': /\bgit\b|\bgithub\b|\bgitlab\b/i,
+            'AWS': /\baws\b|\bs3\b|\bec2\b|\blambda\b|\bdynamo\b/i,
+            'Firebase': /\bfirebase\b|\bfirestore\b/i,
+            'PHP': /\bphp\b|\blaravel\b|\bwordpress\b/i,
+            'Java': /\bjava\b(?!script)/i,
+            'C#': /\bc#\b|\.net\b|\bcsharp\b/i,
+            'Ruby': /\bruby\b|\brails\b/i,
+            'Go': /\bgolang\b|\bgo\s+(lang|module|routine)\b/i,
+            'Rust': /\brust\b|\bcargo\b/i,
+            'Swift': /\bswift\b|\bswiftui\b/i,
+            'Kotlin': /\bkotlin\b/i,
+            'Flutter': /\bflutter\b|\bdart\b/i,
+            'React Native': /\breact\s*native\b/i,
+            'Django': /\bdjango\b/i,
+            'Flask': /\bflask\b/i,
+            'FastAPI': /\bfastapi\b/i,
+            'Express': /\bexpress\.?js?\b/i,
+            'Redis': /\bredis\b/i,
+            'GraphQL': /\bgraphql\b/i,
+            'REST API': /\brest\s*api\b|\bapi\s*rest\b|\bendpoint\b/i,
+            'Kubernetes': /\bkubernetes\b|\bk8s\b/i,
+            'Terraform': /\bterraform\b/i,
+            'Linux': /\blinux\b|\bubuntu\b|\bdebian\b|\bbash\b/i,
+            'TensorFlow': /\btensorflow\b|\btf\.\b/i,
+            'PyTorch': /\bpytorch\b|\btorch\.\b/i,
+            'Pandas': /\bpandas\b/i,
+            'NumPy': /\bnumpy\b/i,
+            'Selenium': /\bselenium\b/i,
+            'Playwright': /\bplaywright\b/i,
+            'Supabase': /\bsupabase\b/i,
+            'Vercel': /\bvercel\b/i,
+            'Netlify': /\bnetlify\b/i,
+            'Figma': /\bfigma\b/i,
+            'Stripe': /\bstripe\b/i,
+            'OpenAI': /\bopenai\b|\bgpt\b|\bchatgpt\b/i,
+            'Claude': /\bclaude\b|\banthropic\b/i,
+            'Svelte': /\bsvelte\b/i,
+            'Astro': /\bastro\b/i,
+            'Vite': /\bvite\b/i,
+            'Webpack': /\bwebpack\b/i,
+            'Nginx': /\bnginx\b/i,
+            'Apache': /\bapache\b/i
+        };
+
+        var TOPIC_CATEGORIES = {
+            'Desarrollo Web': /\bweb\b|\bfrontend\b|\bbackend\b|\bfull.?stack\b|\bresponsive\b|\blanding\b|\bpagina\b|\bsitio\b/i,
+            'Base de Datos': /\bbase\s*de\s*datos\b|\bdatabase\b|\bsql\b|\bquery\b|\btabla\b|\brelacion\b|\bschema\b/i,
+            'IA / Machine Learning': /\binteligencia\s*artificial\b|\bmachine\s*learning\b|\bml\b|\bmodelo\b|\bentrenar\b|\bneurona\b|\bdeep\s*learning\b|\bllm\b|\bgpt\b|\bprompt\b/i,
+            'Automatizacion': /\bautomati[zs]\b|\bscript\b|\bbot\b|\bscraping\b|\bscraper\b|\bcron\b|\bschedule\b/i,
+            'Analisis de Datos': /\banalisis\b|\bdata\b|\bgrafica\b|\bvisuali[zs]\b|\bestadistic\b|\breporte\b|\bdashboard\b/i,
+            'Mobile': /\bmovil\b|\bmobile\b|\bandroid\b|\bios\b|\bapp\b|\baplicacion\b/i,
+            'DevOps / Infra': /\bdevops\b|\bdeploy\b|\bci.?cd\b|\bservidor\b|\bserver\b|\bcloud\b|\bhosting\b|\binfra\b/i,
+            'Seguridad': /\bsegurid\b|\bsecurity\b|\bauth\b|\btoken\b|\bencript\b|\bhash\b|\bvulnerab\b|\bxss\b|\bsql\s*inject\b/i,
+            'API': /\bapi\b|\bendpoint\b|\brest\b|\bgraphql\b|\bwebhook\b|\bintegra\b/i,
+            'Diseno / UI': /\bdise[ñn]o\b|\bui\b|\bux\b|\binterfaz\b|\bestilo\b|\blayout\b|\bcomponent\b/i,
+            'Testing': /\btest\b|\bprueba\b|\bunit\b|\be2e\b|\bqa\b|\bbug\b|\bdebug\b/i,
+            'Negocio / Productividad': /\bnegocio\b|\bbusiness\b|\bempresa\b|\bproductiv\b|\bgestio\b|\bmanage\b|\borganiz\b/i
+        };
+
+        var QUERY_TYPES = {
+            'Generar codigo': /\b(crea|genera|haz|escribe|programa|implementa|desarrolla|construye|monta)\b/i,
+            'Explicacion': /\b(explica|que\s+es|como\s+funciona|diferencia|significa|concepto|ense[ñn]a)\b/i,
+            'Debug / Fix': /\b(error|bug|falla|no\s+funciona|corregir|arregla|soluciona|problema|rompe|crash)\b/i,
+            'Mejora': /\b(mejora|optimiz|refactor|rendimiento|performance|rapido|eficien)\b/i,
+            'Diseno / Arquitectura': /\b(arquitectura|estructura|patron|dise[ñn]a|organiza|planea|estrategia)\b/i,
+            'Configuracion': /\b(configura|instala|setup|deploy|conecta|integra)\b/i
+        };
+
+        function analyzeLocally() {
+            var allContent = chatData.chats.map(function(c) { return c.content; }).join('\n\n');
+            var allTitles = chatData.chats.map(function(c) { return c.title; });
+
+            // 1. Detect technologies
+            var techFound = [];
+            Object.keys(TECH_PATTERNS).forEach(function(tech) {
+                var matches = allContent.match(TECH_PATTERNS[tech]);
+                if (matches) {
+                    var count = (allContent.match(new RegExp(TECH_PATTERNS[tech].source, 'gi')) || []).length;
+                    techFound.push({ tool: tech, frequency: count, usage: 'Mencionado en conversaciones' });
+                }
+            });
+            techFound.sort(function(a, b) { return b.frequency - a.frequency; });
+
+            // 2. Detect topics per chat
+            var topicCounts = {};
+            var topicChats = {};
+
+            chatData.chats.forEach(function(chat) {
+                var text = chat.title + ' ' + chat.content;
+                Object.keys(TOPIC_CATEGORIES).forEach(function(topic) {
+                    if (TOPIC_CATEGORIES[topic].test(text)) {
+                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                        if (!topicChats[topic]) topicChats[topic] = [];
+                        if (topicChats[topic].indexOf(chat.title) === -1) {
+                            topicChats[topic].push(chat.title);
+                        }
+                    }
+                });
+            });
+
+            var mainTopics = Object.keys(topicCounts).map(function(topic) {
+                return { topic: topic, frequency: topicCounts[topic], relatedChats: topicChats[topic] || [] };
+            });
+            mainTopics.sort(function(a, b) { return b.frequency - a.frequency; });
+
+            // 3. Detect projects
+            var projects = [];
+            var projectRe = /(?:proyecto|app|aplicacion|sistema|plataforma|herramienta|pagina|sitio|bot|dashboard|portal)\s+(?:de\s+|para\s+|llamad[oa]\s+)?["']?([A-ZÀ-ɏ][A-Za-zÀ-ɏ0-9\s-]{1,40})/gi;
+            var projectNames = new Set();
+
+            chatData.chats.forEach(function(chat) {
+                var text = chat.title + ' ' + chat.content;
+                var m;
+                while ((m = projectRe.exec(text)) !== null) {
+                    var name = m[1].trim().replace(/\s+/g, ' ');
+                    if (name.length > 2 && !projectNames.has(name.toLowerCase())) {
+                        projectNames.add(name.toLowerCase());
+                        var techs = [];
+                        Object.keys(TECH_PATTERNS).forEach(function(tech) {
+                            if (TECH_PATTERNS[tech].test(chat.content)) techs.push(tech);
+                        });
+                        projects.push({
+                            name: name,
+                            description: 'Detectado en: ' + chat.title,
+                            status: 'mencionado',
+                            technologies: techs.slice(0, 5),
+                            chatSources: [chat.title]
+                        });
+                    }
+                }
+            });
+
+            if (projects.length === 0 && chatData.chats.length > 0) {
+                chatData.chats.forEach(function(chat) {
+                    var techs = [];
+                    Object.keys(TECH_PATTERNS).forEach(function(tech) {
+                        if (TECH_PATTERNS[tech].test(chat.content)) techs.push(tech);
+                    });
+                    if (techs.length > 0) {
+                        projects.push({
+                            name: chat.title,
+                            description: 'Basado en el titulo del chat',
+                            status: 'detectado',
+                            technologies: techs.slice(0, 5),
+                            chatSources: [chat.title]
+                        });
+                    }
+                });
+            }
+
+            // 4. Query type analysis
+            var queryTypeCounts = {};
+            chatData.chats.forEach(function(chat) {
+                var userParts = chat.content.split(/\b(?:Human|Usuario|User)\s*:/i);
+                userParts.forEach(function(part) {
+                    Object.keys(QUERY_TYPES).forEach(function(qt) {
+                        if (QUERY_TYPES[qt].test(part)) {
+                            queryTypeCounts[qt] = (queryTypeCounts[qt] || 0) + 1;
+                        }
+                    });
+                });
+            });
+
+            var insights = [];
+            var sortedQueryTypes = Object.keys(queryTypeCounts).sort(function(a, b) { return queryTypeCounts[b] - queryTypeCounts[a]; });
+
+            if (sortedQueryTypes.length > 0) {
+                insights.push({
+                    insight: 'Tu tipo de consulta mas frecuente es "' + sortedQueryTypes[0] + '" (' + queryTypeCounts[sortedQueryTypes[0]] + ' veces)',
+                    category: 'tecnico',
+                    importance: 'alta'
+                });
+            }
+
+            if (techFound.length > 0) {
+                insights.push({
+                    insight: 'Tu tecnologia mas usada es ' + techFound[0].tool + ' (mencionada ' + techFound[0].frequency + ' veces)',
+                    category: 'tecnico',
+                    importance: 'alta'
+                });
+            }
+
+            if (mainTopics.length > 0) {
+                insights.push({
+                    insight: 'Tu area principal de interes es "' + mainTopics[0].topic + '"',
+                    category: 'profesional',
+                    importance: 'alta'
+                });
+            }
+
+            if (chatData.chats.length >= 3) {
+                var avgWords = Math.round(chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0) / chatData.chats.length);
+                insights.push({
+                    insight: 'Promedio de ' + avgWords.toLocaleString() + ' palabras por conversacion',
+                    category: 'personal',
+                    importance: 'media'
+                });
+            }
+
+            if (techFound.length > 5) {
+                insights.push({
+                    insight: 'Manejas ' + techFound.length + ' tecnologias diferentes — perfil versatil',
+                    category: 'profesional',
+                    importance: 'media'
+                });
+            }
+
+            // 5. Evolution
+            var focusAreas = mainTopics.slice(0, 4).map(function(t) { return t.topic; });
+            var totalWords = chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0);
+
+            var evolution = {
+                progressionPattern: chatData.chats.length >= 3
+                    ? 'Patron detectado en ' + chatData.chats.length + ' conversaciones con ' + totalWords.toLocaleString() + ' palabras totales'
+                    : 'Agrega mas chats para detectar patrones de evolucion',
+                skillDevelopment: techFound.length > 0
+                    ? 'Enfoque principal en: ' + techFound.slice(0, 3).map(function(t) { return t.tool; }).join(', ')
+                    : 'Aun no se detectan tecnologias especificas',
+                focusAreas: focusAreas.length > 0 ? focusAreas : ['General'],
+                queryBreakdown: queryTypeCounts
+            };
+
+            // 6. Summary
+            var summary = 'Analisis local de ' + chatData.chats.length + ' conversacion(es) con ' + totalWords.toLocaleString() + ' palabras. ';
+            if (techFound.length > 0) summary += techFound.length + ' tecnologias detectadas. ';
+            if (mainTopics.length > 0) summary += 'Temas principales: ' + mainTopics.slice(0, 3).map(function(t) { return t.topic; }).join(', ') + '. ';
+            summary += 'Analisis 100% local — ningun dato salio de tu navegador.';
+
+            return {
+                projects: projects,
+                mainTopics: mainTopics,
+                insights: insights,
+                tools: techFound,
+                evolution: evolution,
+                summary: summary
+            };
+        }
+
+        // ── Processing ──
+        async function startProcessing() {
+            if (chatData.chats.length === 0) {
+                showStatus('Primero carga algunos chats', 'error');
+                return;
+            }
+
+            var btn = document.getElementById('processBtn');
+            var prog = document.getElementById('processingProgress');
+            var fill = document.getElementById('progressFill');
+            var text = document.getElementById('progressText');
+
+            btn.disabled = true;
+            prog.classList.remove('hidden');
+
+            text.textContent = 'Analizando contenido...';
+            fill.style.width = '30%';
+
+            await new Promise(function(r) { setTimeout(r, 200); });
+
+            chatData.analysis = analyzeLocally();
+
+            fill.style.width = '80%';
+            text.textContent = 'Generando resultados...';
+
+            await new Promise(function(r) { setTimeout(r, 200); });
+
+            saveData();
+            updateStats();
+            displayResults();
+
+            fill.style.width = '100%';
+            text.textContent = 'Analisis completado';
+
+            setTimeout(function() {
+                prog.classList.add('hidden');
+                btn.disabled = false;
+                var resultsTab = document.querySelector('[data-tab="results"]');
+                showTab('results', resultsTab);
+            }, 500);
+        }
+
+        // ── Display results ──
+        function displayResults() {
+            var div = document.getElementById('analysisResults');
+            var a = chatData.analysis;
+
+            if (!a) {
+                div.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">Ejecuta el analisis primero</p>';
+                return;
+            }
+
+            var html = '';
+
+            // Summary
+            html += '<div class="analysis-section">';
+            html += '<div class="analysis-title">Resumen</div>';
+            html += '<p>' + esc(a.summary) + '</p>';
+            html += '</div>';
+
+            // Projects
+            if (a.projects.length > 0) {
+                html += '<div class="analysis-section">';
+                html += '<div class="analysis-title">Proyectos Detectados (' + a.projects.length + ')</div>';
+                a.projects.forEach(function(p) {
+                    html += '<div class="result-item">';
+                    html += '<h4 style="color:var(--accent);margin-bottom:8px;">' + esc(p.name) + '</h4>';
+                    html += '<p style="margin-bottom:8px;">' + esc(p.description) + '</p>';
+                    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+                    html += '<span class="status-tag">' + esc(p.status) + '</span>';
+                    p.technologies.forEach(function(tech) {
+                        html += '<span class="tech-tag">' + esc(tech) + '</span>';
+                    });
+                    html += '</div></div>';
+                });
+                html += '</div>';
+            }
+
+            // Topics
+            if (a.mainTopics.length > 0) {
+                html += '<div class="analysis-section">';
+                html += '<div class="analysis-title">Temas Principales</div>';
+                a.mainTopics.forEach(function(topic) {
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:10px;border-radius:8px;" class="result-item">';
+                    html += '<span><strong>' + esc(topic.topic) + '</strong>';
+                    if (topic.relatedChats.length > 0) {
+                        html += '<br><small style="color:var(--text-muted);">En: ' + topic.relatedChats.map(esc).join(', ') + '</small>';
+                    }
+                    html += '</span>';
+                    html += '<span class="freq-badge">' + topic.frequency + ' chat(s)</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            // Insights
+            if (a.insights.length > 0) {
+                html += '<div class="analysis-section">';
+                html += '<div class="analysis-title">Insights</div>';
+                a.insights.forEach(function(ins) {
+                    var borderColor = ins.importance === 'alta' ? 'var(--importance-high)' : ins.importance === 'media' ? 'var(--importance-med)' : 'var(--importance-low)';
+                    html += '<div class="result-item" style="border-left:4px solid ' + borderColor + ';">';
+                    html += '<strong>' + esc(ins.insight) + '</strong>';
+                    html += '<div style="font-size:0.8em;color:var(--text-muted);margin-top:5px;">';
+                    html += esc(ins.category) + ' &middot; ' + esc(ins.importance);
+                    html += '</div></div>';
+                });
+                html += '</div>';
+            }
+
+            // Tools
+            if (a.tools.length > 0) {
+                html += '<div class="analysis-section">';
+                html += '<div class="analysis-title">Tecnologias Detectadas (' + a.tools.length + ')</div>';
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">';
+                a.tools.forEach(function(tool) {
+                    html += '<div class="result-item" style="text-align:center;padding:12px;">';
+                    html += '<h4 style="color:var(--accent);margin-bottom:6px;">' + esc(tool.tool) + '</h4>';
+                    html += '<div class="status-tag">' + tool.frequency + ' mencion(es)</div>';
+                    html += '</div>';
+                });
+                html += '</div></div>';
+            }
+
+            // Evolution
+            html += '<div class="analysis-section">';
+            html += '<div class="analysis-title">Patrones y Evolucion</div>';
+            html += '<div class="result-item" style="padding:20px;">';
+            html += '<p style="margin-bottom:12px;">' + esc(a.evolution.progressionPattern) + '</p>';
+            html += '<p style="margin-bottom:12px;">' + esc(a.evolution.skillDevelopment) + '</p>';
+            if (a.evolution.focusAreas.length > 0) {
+                html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">';
+                a.evolution.focusAreas.forEach(function(area) {
+                    html += '<span class="focus-tag">' + esc(area) + '</span>';
+                });
+                html += '</div>';
+            }
+            if (a.evolution.queryBreakdown && Object.keys(a.evolution.queryBreakdown).length > 0) {
+                html += '<h4 style="color:var(--accent);margin:16px 0 8px;">Tipos de Consulta</h4>';
+                Object.keys(a.evolution.queryBreakdown).sort(function(x, y) {
+                    return a.evolution.queryBreakdown[y] - a.evolution.queryBreakdown[x];
+                }).forEach(function(qt) {
+                    html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">';
+                    html += '<span>' + esc(qt) + '</span>';
+                    html += '<span class="freq-badge">' + a.evolution.queryBreakdown[qt] + '</span>';
+                    html += '</div>';
+                });
+            }
+            html += '</div></div>';
+
+            div.innerHTML = html;
+        }
+
+        // ── Exports ──
+        function exportJSON() {
+            if (!chatData.analysis) {
+                showStatus('Ejecuta el analisis primero', 'error');
+                return;
+            }
+            var data = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    totalChats: chatData.chats.length,
+                    version: '2.0',
+                    method: 'local-analysis'
+                },
+                chats: chatData.chats.map(function(c) {
+                    return { id: c.id, title: c.title, wordCount: c.wordCount, addedAt: c.addedAt };
+                }),
+                analysis: chatData.analysis
+            };
+            downloadFile(JSON.stringify(data, null, 2), 'claude-analysis.json', 'application/json');
+        }
+
+        function csvEscape(val) {
+            var s = String(val == null ? '' : val);
+            if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+                return '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        }
+
+        function exportCSV() {
+            if (!chatData.analysis) {
+                showStatus('Ejecuta el analisis primero', 'error');
+                return;
+            }
+            var rows = [['Categoria', 'Nombre', 'Detalle', 'Frecuencia']];
+
+            (chatData.analysis.tools || []).forEach(function(t) {
+                rows.push(['Tecnologia', t.tool, t.usage, t.frequency]);
+            });
+            (chatData.analysis.mainTopics || []).forEach(function(t) {
+                rows.push(['Tema', t.topic, t.relatedChats.join('; '), t.frequency]);
+            });
+            (chatData.analysis.projects || []).forEach(function(p) {
+                rows.push(['Proyecto', p.name, p.technologies.join('; '), '']);
+            });
+            (chatData.analysis.insights || []).forEach(function(i) {
+                rows.push(['Insight', i.insight, i.category, i.importance]);
+            });
+
+            var csv = rows.map(function(row) { return row.map(csvEscape).join(','); }).join('\n');
+            downloadFile('﻿' + csv, 'claude-analysis.csv', 'text/csv;charset=utf-8');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            var blob = new Blob([content], { type: mimeType });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+        }
+
+        // ── Status messages ──
+        function showStatus(message, type) {
+            var div = document.getElementById('uploadStatus');
+            div.className = type;
+            div.innerHTML = type === 'success' ? message : esc(message);
+            div.classList.remove('hidden');
+            setTimeout(function() { div.classList.add('hidden'); }, 5000);
+        }
+
+        // ── Init ──
+        updateChatsList();
+        updateStats();
+        if (chatData.analysis) displayResults();
+    </script>
+</body>
+</html>
