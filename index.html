@@ -292,8 +292,195 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── Onboarding ── */
+        .welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        .welcome-box {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 90%;
+            padding: 40px 35px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.5s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .welcome-box .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e65100, #ff8f00);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: #fff;
+        }
+        .welcome-box h1 {
+            font-size: 24px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .welcome-box .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-box .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .welcome-box .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+        .welcome-box .step-dot.active {
+            background: #e65100;
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .welcome-box .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .welcome-box .feat {
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+        .welcome-box .feat b {
+            display: block;
+            color: #e65100;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .w-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .w-input:focus {
+            outline: none;
+            border-color: #e65100;
+        }
+
+        .w-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        .w-btn:hover { transform: scale(1.02); }
+        .w-btn:active { transform: scale(0.98); }
+
+        .w-btn-primary {
+            background: linear-gradient(135deg, #e65100, #ff8f00);
+            color: #fff;
+        }
+        .w-btn-outline {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            color: #333;
+        }
+        .w-btn-outline:hover { border-color: #e65100; }
+        .w-btn-skip {
+            background: none;
+            color: #aaa;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .os-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .os-card:hover, .os-card.detected {
+            border-color: #e65100;
+            background: #fff3e0;
+        }
+        .os-card .os-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .os-card .os-cmd {
+            background: #1a1a2e;
+            color: #4ade80;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: left;
+        }
+        .os-badge {
+            display: inline-block;
+            background: #e65100;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .privacy-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .privacy-pill {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         @media print {
-            .tabs, .btn, .drop, .privacy, .divider { display: none !important; }
+            .tabs, .btn, .drop, .privacy, .divider, .welcome-overlay { display: none !important; }
             .panel { display: block !important; }
             .card { box-shadow: none; border: 1px solid #ddd; }
         }
@@ -302,12 +489,22 @@
             .app { padding: 10px; }
             .header h1 { font-size: 20px; }
             .stats { grid-template-columns: 1fr 1fr; }
+            .welcome-box { padding: 25px 20px; }
+            .welcome-box .features { grid-template-columns: 1fr; }
+            .welcome-box h1 { font-size: 20px; }
         }
     </style>
 </head>
 <body>
 
-<div class="app">
+<!-- ── ONBOARDING ── -->
+<div class="welcome-overlay" id="welcomeOverlay" style="display:none">
+    <div class="welcome-box" id="welcomeBox">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
     <div class="privacy">
         <b>100% Privado</b> — Tus datos nunca salen de tu navegador. No hay servidor, no hay API, no hay tracking. Todo se procesa en tu maquina.
     </div>
@@ -948,9 +1145,11 @@ document.getElementById('btnJSON').onclick = expJSON;
 document.getElementById('btnCSV').onclick = expCSV;
 document.getElementById('btnPrint').onclick = function() { window.print(); };
 document.getElementById('btnNuke').onclick = function() {
-    if (!confirm('Borrar TODOS los datos permanentemente?')) return;
+    if (!confirm('Borrar TODOS los datos permanentemente?\n(Incluye perfil — volveras a ver la pantalla de bienvenida)')) return;
     D = { chats: [], analysis: null };
     localStorage.removeItem(KEY);
+    localStorage.removeItem(PROFILE_KEY);
+    profile = null;
     renderList();
     updateStats();
     document.getElementById('results').innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Datos borrados</p>';
@@ -1100,11 +1299,168 @@ document.getElementById('btnOllamaAdvice').onclick = function() {
     ollamaSend('Basandote en estas conversaciones, da 5 consejos practicos para que el usuario mejore su productividad con Claude AI. Se especifico y da ejemplos. Responde en espanol.', 'ollamaResult');
 };
 
+// ── Onboarding ──
+var PROFILE_KEY = 'claude-profile';
+var profile = loadProfile();
+
+function loadProfile() {
+    try { var r = localStorage.getItem(PROFILE_KEY); if (r) return JSON.parse(r); } catch(e) {}
+    return null;
+}
+function saveProfile(p) {
+    profile = p;
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e) {}
+}
+
+function detectOS() {
+    var ua = navigator.userAgent || '';
+    if (ua.indexOf('Win') >= 0) return 'windows';
+    if (ua.indexOf('Mac') >= 0) return 'mac';
+    if (ua.indexOf('Linux') >= 0) return 'linux';
+    return 'other';
+}
+
+var onboardStep = 0;
+
+function showOnboarding() {
+    document.getElementById('welcomeOverlay').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    renderStep();
+}
+
+function finishOnboarding() {
+    document.getElementById('welcomeOverlay').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    initApp();
+}
+
+function renderStep() {
+    var box = document.getElementById('welcomeBox');
+
+    if (onboardStep === 0) {
+        box.innerHTML =
+            '<div class="logo-icon">&#9881;</div>' +
+            '<h1>Analizador de Chats</h1>' +
+            '<p class="subtitle">Analiza tus conversaciones de IA de forma 100% privada</p>' +
+            '<div class="step-dots"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>' +
+            '<div class="features">' +
+                '<div class="feat"><b>Privado</b>Sin servidor, todo en tu navegador</div>' +
+                '<div class="feat"><b>Offline</b>Funciona sin internet</div>' +
+                '<div class="feat"><b>IA Local</b>Ollama para analisis con IA real</div>' +
+                '<div class="feat"><b>Exportar</b>JSON, CSV e imprimir</div>' +
+            '</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnStart">Comenzar</button>';
+
+        document.getElementById('wBtnStart').onclick = function() { onboardStep = 1; renderStep(); };
+        return;
+    }
+
+    if (onboardStep === 1) {
+        box.innerHTML =
+            '<div class="logo-icon">&#128100;</div>' +
+            '<h1>Tu Perfil</h1>' +
+            '<p class="subtitle">Se guarda solo en tu maquina, nunca se envia a internet</p>' +
+            '<div class="step-dots"><div class="step-dot"></div><div class="step-dot active"></div><div class="step-dot"></div></div>' +
+            '<input class="w-input" id="wName" placeholder="Tu nombre" autocomplete="name">' +
+            '<input class="w-input" id="wEmail" type="email" placeholder="Email (opcional)" autocomplete="email">' +
+            '<div class="privacy-pills">' +
+                '<span class="privacy-pill">Sin servidor</span>' +
+                '<span class="privacy-pill">Sin tracking</span>' +
+                '<span class="privacy-pill">100% local</span>' +
+            '</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnProfile">Guardar y Continuar</button>' +
+            '<button class="w-btn w-btn-skip" id="wBtnSkipProfile">Saltar este paso</button>';
+
+        document.getElementById('wBtnProfile').onclick = function() {
+            var name = document.getElementById('wName').value.trim();
+            var email = document.getElementById('wEmail').value.trim();
+            if (!name) { document.getElementById('wName').style.borderColor = '#c62828'; return; }
+            saveProfile({ name: name, email: email, created: new Date().toISOString() });
+            onboardStep = 2;
+            renderStep();
+        };
+        document.getElementById('wBtnSkipProfile').onclick = function() {
+            saveProfile({ name: 'Usuario', email: '', created: new Date().toISOString() });
+            onboardStep = 2;
+            renderStep();
+        };
+        return;
+    }
+
+    if (onboardStep === 2) {
+        var os = detectOS();
+        var winClass = os === 'windows' ? ' detected' : '';
+        var macClass = os === 'mac' ? ' detected' : '';
+        var linClass = os === 'linux' ? ' detected' : '';
+        var badge = '<span class="os-badge">Tu sistema</span>';
+
+        box.innerHTML =
+            '<div class="logo-icon">&#129302;</div>' +
+            '<h1>IA Local (Opcional)</h1>' +
+            '<p class="subtitle">Instala Ollama para analisis con IA real en tu PC</p>' +
+            '<div class="step-dots"><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot active"></div></div>' +
+            '<div id="ollamaCheck" style="margin-bottom:15px;"></div>' +
+            '<div class="os-card' + winClass + '" id="osWin">' +
+                '<div class="os-name">Windows' + (os === 'windows' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Descarga el instalador .exe</div>' +
+                '<div class="os-cmd">winget install Ollama.Ollama</div>' +
+            '</div>' +
+            '<div class="os-card' + macClass + '" id="osMac">' +
+                '<div class="os-name">macOS' + (os === 'mac' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Descarga la app .dmg</div>' +
+                '<div class="os-cmd">brew install ollama</div>' +
+            '</div>' +
+            '<div class="os-card' + linClass + '" id="osLinux">' +
+                '<div class="os-name">Linux' + (os === 'linux' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Un comando en terminal</div>' +
+                '<div class="os-cmd">curl -fsSL https://ollama.com/install.sh | sh</div>' +
+            '</div>' +
+            '<p style="font-size:12px;color:#888;margin:12px 0 5px;">Despues de instalar, ejecuta en terminal:</p>' +
+            '<div style="background:#1a1a2e;color:#4ade80;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:14px;margin-bottom:15px;text-align:left;">ollama pull llama3.2</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnFinish">Entrar a la App</button>' +
+            '<button class="w-btn w-btn-skip" id="wBtnSkipOllama">Ya lo tengo instalado</button>';
+
+        // Auto-check if Ollama is running
+        var checkDiv = document.getElementById('ollamaCheck');
+        var xhrCheck = new XMLHttpRequest();
+        xhrCheck.open('GET', 'http://localhost:11434/api/tags', true);
+        xhrCheck.timeout = 3000;
+        xhrCheck.onload = function() {
+            if (xhrCheck.status === 200) {
+                checkDiv.innerHTML = '<div style="background:#e8f5e9;color:#2e7d32;padding:12px;border-radius:10px;font-weight:bold;">Ollama detectado y funcionando en tu maquina</div>';
+            }
+        };
+        xhrCheck.onerror = function() {};
+        xhrCheck.ontimeout = function() {};
+        xhrCheck.send();
+
+        document.getElementById('wBtnFinish').onclick = function() { finishOnboarding(); };
+        document.getElementById('wBtnSkipOllama').onclick = function() { finishOnboarding(); };
+        return;
+    }
+}
+
+function initApp() {
+    buildTabs();
+    renderList();
+    updateStats();
+    if (D.analysis) renderResults();
+    updateProfileHeader();
+}
+
+function updateProfileHeader() {
+    if (!profile || !profile.name || profile.name === 'Usuario') return;
+    var hdr = document.querySelector('.header p');
+    if (hdr) hdr.textContent = 'Hola, ' + profile.name + ' — 100% offline y privado';
+}
+
 // ── Init ──
-buildTabs();
-renderList();
-updateStats();
-if (D.analysis) renderResults();
+if (profile) {
+    document.getElementById('mainApp').style.display = 'block';
+    initApp();
+} else {
+    showOnboarding();
+}
 </script>
 
 </body>
