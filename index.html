@@ -3,1553 +3,1109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analizador de Chats Claude - 100% Local</title>
+    <title>Analizador de Chats Claude</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg: #f0f2f5;
-            --bg-grad-1: #667eea;
-            --bg-grad-2: #764ba2;
-            --surface: rgba(255, 255, 255, 0.95);
-            --surface-solid: #ffffff;
-            --text: #333333;
-            --text-muted: #666666;
-            --text-light: #999999;
-            --accent: #FF6B35;
-            --accent-hover: #e55a25;
-            --accent-shadow: rgba(255, 107, 53, 0.3);
-            --accent-bg: rgba(255, 107, 53, 0.05);
-            --accent-border: rgba(255, 107, 53, 0.2);
-            --green: #198754;
-            --green-bg: #e6f7e6;
-            --red: #d63384;
-            --red-bg: #ffe6e6;
-            --blue: #0d6efd;
-            --input-border: #e1e1e1;
-            --input-focus: #FF6B35;
-            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --stat-grad-1: #667eea;
-            --stat-grad-2: #764ba2;
-            --stat-text: #ffffff;
-            --chat-item-bg: #f8f9fa;
-            --chat-item-border: #FF6B35;
-            --badge-bg: #333333;
-            --badge-text: #ffffff;
-            --tab-bg: #f0f0f0;
-            --tab-text: #333333;
-            --tech-bg: #d1ecf1;
-            --tech-text: #0c5460;
-            --status-bg: #e9ecef;
-            --focus-bg: #d4edda;
-            --focus-text: #155724;
-            --importance-high: #28a745;
-            --importance-med: #ffc107;
-            --importance-low: #6c757d;
-            --privacy-bg: #e8f5e9;
-            --privacy-border: #4caf50;
-            --privacy-text: #2e7d32;
-            --result-item-bg: #ffffff;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) {
-                --bg: #1a1a2e;
-                --bg-grad-1: #2d2b55;
-                --bg-grad-2: #3b1f5e;
-                --surface: rgba(30, 30, 50, 0.95);
-                --surface-solid: #1e1e32;
-                --text: #e0e0e0;
-                --text-muted: #a0a0b0;
-                --text-light: #707080;
-                --accent: #ff8c5a;
-                --accent-hover: #ff7a42;
-                --accent-shadow: rgba(255, 140, 90, 0.3);
-                --accent-bg: rgba(255, 140, 90, 0.08);
-                --accent-border: rgba(255, 140, 90, 0.25);
-                --green: #4caf50;
-                --green-bg: rgba(76, 175, 80, 0.12);
-                --red: #ef5350;
-                --red-bg: rgba(239, 83, 80, 0.12);
-                --blue: #64b5f6;
-                --input-border: #3a3a50;
-                --input-focus: #ff8c5a;
-                --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                --stat-grad-1: #3d3b6e;
-                --stat-grad-2: #4a2870;
-                --stat-text: #e0e0e0;
-                --chat-item-bg: #252540;
-                --chat-item-border: #ff8c5a;
-                --badge-bg: #2a2a45;
-                --badge-text: #c0c0d0;
-                --tab-bg: #2a2a45;
-                --tab-text: #c0c0d0;
-                --tech-bg: rgba(100, 181, 246, 0.15);
-                --tech-text: #90caf9;
-                --status-bg: rgba(160, 160, 176, 0.15);
-                --focus-bg: rgba(76, 175, 80, 0.12);
-                --focus-text: #81c784;
-                --importance-high: #66bb6a;
-                --importance-med: #ffca28;
-                --importance-low: #9e9e9e;
-                --privacy-bg: rgba(76, 175, 80, 0.1);
-                --privacy-border: #4caf50;
-                --privacy-text: #81c784;
-                --result-item-bg: #252540;
-            }
-        }
-
-        :root[data-theme="dark"] {
-            --bg: #1a1a2e;
-            --bg-grad-1: #2d2b55;
-            --bg-grad-2: #3b1f5e;
-            --surface: rgba(30, 30, 50, 0.95);
-            --surface-solid: #1e1e32;
-            --text: #e0e0e0;
-            --text-muted: #a0a0b0;
-            --text-light: #707080;
-            --accent: #ff8c5a;
-            --accent-hover: #ff7a42;
-            --accent-shadow: rgba(255, 140, 90, 0.3);
-            --accent-bg: rgba(255, 140, 90, 0.08);
-            --accent-border: rgba(255, 140, 90, 0.25);
-            --green: #4caf50;
-            --green-bg: rgba(76, 175, 80, 0.12);
-            --red: #ef5350;
-            --red-bg: rgba(239, 83, 80, 0.12);
-            --blue: #64b5f6;
-            --input-border: #3a3a50;
-            --input-focus: #ff8c5a;
-            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            --header-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --stat-grad-1: #3d3b6e;
-            --stat-grad-2: #4a2870;
-            --stat-text: #e0e0e0;
-            --chat-item-bg: #252540;
-            --chat-item-border: #ff8c5a;
-            --badge-bg: #2a2a45;
-            --badge-text: #c0c0d0;
-            --tab-bg: #2a2a45;
-            --tab-text: #c0c0d0;
-            --tech-bg: rgba(100, 181, 246, 0.15);
-            --tech-text: #90caf9;
-            --status-bg: rgba(160, 160, 176, 0.15);
-            --focus-bg: rgba(76, 175, 80, 0.12);
-            --focus-text: #81c784;
-            --importance-high: #66bb6a;
-            --importance-med: #ffca28;
-            --importance-low: #9e9e9e;
-            --privacy-bg: rgba(76, 175, 80, 0.1);
-            --privacy-border: #4caf50;
-            --privacy-text: #81c784;
-            --result-item-bg: #252540;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
-            min-height: 100vh;
-            color: var(--text);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .privacy-banner {
-            background: var(--privacy-bg);
-            border: 1px solid var(--privacy-border);
-            color: var(--privacy-text);
-            padding: 12px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .privacy-banner strong { font-weight: 700; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #f5f5f5; color: #333; }
+        .app { max-width: 900px; margin: 0 auto; padding: 20px; }
 
         .header {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
             text-align: center;
-            margin-bottom: 30px;
-            background: var(--surface);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--header-shadow);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header h1 { color: #e65100; font-size: 24px; margin-bottom: 5px; }
+        .header p { color: #888; font-size: 14px; }
+
+        .privacy {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
         }
 
-        .header h1 { color: var(--accent); font-size: 2.5em; margin-bottom: 10px; }
-        .claude-icon { font-size: 3em; margin-bottom: 15px; }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tabs button {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .tabs button.on {
+            background: #e65100;
+            color: #fff;
+            border-color: #e65100;
+        }
+
+        .panel { display: none; }
+        .panel.on { display: block; }
 
         .card {
-            background: var(--surface);
-            border-radius: 15px;
+            background: #fff;
             padding: 25px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #333; }
+        .card h3 { font-size: 16px; margin: 20px 0 10px; color: #555; }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
 
-        .tab {
-            padding: 12px 24px;
-            background: var(--tab-bg);
-            color: var(--tab-text);
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            font-family: inherit;
-            font-size: 14px;
-        }
-
-        .tab.active {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px var(--accent-shadow);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        textarea, input[type="text"] {
+        input[type=text], textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid var(--input-border);
-            border-radius: 10px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 14px;
-            margin-bottom: 15px;
-            transition: border-color 0.3s ease;
             font-family: inherit;
-            background: var(--surface-solid);
-            color: var(--text);
+            margin-bottom: 12px;
         }
-
-        textarea:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: var(--input-focus);
-            box-shadow: 0 0 0 3px var(--accent-bg);
-        }
+        input[type=text]:focus, textarea:focus { outline: none; border-color: #e65100; }
 
         .btn {
-            background: linear-gradient(45deg, var(--accent), var(--accent-hover));
-            color: white;
+            background: #e65100;
+            color: #fff;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-family: inherit;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px var(--accent-shadow);
-        }
-
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-        .btn-danger {
-            background: linear-gradient(45deg, var(--red), #c2185b);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(45deg, var(--stat-grad-1), var(--stat-grad-2));
-            color: var(--stat-text);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-number { font-size: 2em; font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
-
-        .chat-item {
-            background: var(--chat-item-bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--chat-item-border);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--tab-bg);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .analysis-section {
-            background: var(--accent-bg);
-            border: 1px solid var(--accent-border);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .analysis-title { color: var(--accent); font-size: 1.3em; font-weight: bold; margin-bottom: 15px; }
-
-        .error { background: var(--red-bg); color: var(--red); padding: 15px; border-radius: 10px; margin: 10px 0; }
-        .success { background: var(--green-bg); color: var(--green); padding: 15px; border-radius: 10px; margin: 10px 0; }
-
-        .hidden { display: none; }
-
-        .delete-btn {
-            background: var(--red);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 13px;
-        }
-        .delete-btn:hover { opacity: 0.85; }
-
-        .result-item {
-            background: var(--result-item-bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .tech-tag {
-            background: var(--tech-bg);
-            color: var(--tech-text);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            display: inline-block;
-        }
-
-        .status-tag {
-            background: var(--status-bg);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            display: inline-block;
-        }
-
-        .focus-tag {
-            background: var(--focus-bg);
-            color: var(--focus-text);
-            padding: 8px 12px;
+            padding: 12px 24px;
             border-radius: 20px;
-            font-size: 0.9em;
-            display: inline-block;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: bold;
         }
+        .btn:hover { background: #bf360c; }
+        .btn-red { background: #c62828; }
+        .btn-red:hover { background: #b71c1c; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
 
-        .freq-badge {
-            background: var(--accent);
-            color: white;
-            padding: 3px 8px;
+        .drop {
+            border: 3px dashed #ccc;
             border-radius: 12px;
-            font-size: 0.8em;
-        }
-
-        .char-count {
-            font-size: 12px;
-            color: var(--text-light);
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 10px;
-        }
-
-        .drop-zone {
-            border: 3px dashed var(--input-border);
-            border-radius: 15px;
-            padding: 30px 20px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-            background: var(--surface-solid);
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
         }
+        .drop:hover, .drop.over { border-color: #e65100; background: #fff3e0; }
+        .drop h3 { color: #e65100; margin: 0 0 8px; font-size: 16px; }
+        .drop p { color: #888; font-size: 13px; margin: 0; }
 
-        .drop-zone:hover, .drop-zone.drag-over {
-            border-color: var(--accent);
-            background: var(--accent-bg);
-        }
-
-        .drop-zone.drag-over {
-            transform: scale(1.01);
-            box-shadow: 0 0 20px var(--accent-shadow);
-        }
-
-        .drop-zone h3 { color: var(--accent); margin-bottom: 8px; }
-        .drop-zone p { color: var(--text-muted); font-size: 14px; margin-bottom: 6px; }
-        .drop-zone small { color: var(--text-light); font-size: 12px; }
-
-        .file-input-hidden { display: none; }
-
-        .loaded-files {
-            margin-top: 12px;
+        .divider {
+            text-align: center;
+            color: #aaa;
             font-size: 13px;
+            margin: 20px 0;
+            position: relative;
         }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #ddd;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
 
-        .loaded-file {
+        .msg { padding: 10px 15px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+        .msg-ok { background: #e8f5e9; color: #2e7d32; }
+        .msg-err { background: #ffebee; color: #c62828; }
+
+        .chat-row {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #e65100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-row b { font-size: 14px; }
+        .chat-row small { color: #888; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat {
+            background: #e65100;
+            color: #fff;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat .num { font-size: 28px; font-weight: bold; }
+        .stat .lbl { font-size: 12px; margin-top: 4px; }
+
+        .section {
+            background: #fff8f0;
+            border: 1px solid #ffe0b2;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .section h3 { color: #e65100; font-size: 16px; margin-bottom: 12px; }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 3px;
+        }
+        .tag-tech { background: #e3f2fd; color: #1565c0; }
+        .tag-topic { background: #f3e5f5; color: #7b1fa2; }
+        .tag-focus { background: #e8f5e9; color: #2e7d32; }
+
+        .bar-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 8px 12px;
-            background: var(--green-bg);
-            color: var(--green);
-            border-radius: 8px;
+            background: #f9f9f9;
+            border-radius: 6px;
             margin-bottom: 6px;
         }
+        .bar-badge {
+            background: #e65100;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
 
-        .separator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 20px 0;
-            color: var(--text-light);
+        .insight-row {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background: #f9f9f9;
+            border-left: 4px solid #4caf50;
+        }
+        .insight-row small { color: #888; }
+
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .export-box {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #e65100;
+            border-radius: 12px;
+        }
+        .export-box h3 { font-size: 15px; margin-bottom: 8px; }
+        .export-box p { font-size: 13px; color: #888; margin-bottom: 12px; }
+
+        ul, ol { margin-left: 20px; line-height: 1.8; }
+
+        .file-ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
             font-size: 13px;
         }
 
-        .separator::before, .separator::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--input-border);
+        .ollama-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
         }
+        .ollama-on { background: #e8f5e9; color: #2e7d32; }
+        .ollama-off { background: #ffebee; color: #c62828; }
+
+        .ollama-box {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .ollama-model-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .ollama-model-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .ollama-model-btn.selected {
+            border-color: #e65100;
+            background: #fff3e0;
+            color: #e65100;
+            font-weight: bold;
+        }
+
+        .ai-response {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #ddd;
+            border-top-color: #e65100;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         @media print {
-            body { background: white !important; }
-            .tabs, .btn, .delete-btn, .privacy-banner, .tab[onclick] { display: none !important; }
-            .tab-content { display: block !important; }
+            .tabs, .btn, .drop, .privacy, .divider { display: none !important; }
+            .panel { display: block !important; }
             .card { box-shadow: none; border: 1px solid #ddd; }
-            .stat-card { background: #667eea !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
 
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .header h1 { font-size: 1.8em; }
+        @media (max-width: 600px) {
+            .app { padding: 10px; }
+            .header h1 { font-size: 20px; }
+            .stats { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="privacy-banner">
-            <strong>100% Privado</strong> &mdash; Tus datos nunca salen de tu navegador. No hay servidor, no hay API, no hay tracking. Todo el analisis se hace localmente en tu maquina.
-        </div>
 
-        <div class="header">
-            <div class="claude-icon">&#x1F916;</div>
-            <h1>Analizador de Chats Claude</h1>
-            <p>Analiza tus conversaciones de Claude AI &mdash; 100% offline y privado</p>
-            <small style="color: var(--text-muted);">Version 2.0 - Analisis Local</small>
-        </div>
+<div class="app">
+    <div class="privacy">
+        <b>100% Privado</b> — Tus datos nunca salen de tu navegador. No hay servidor, no hay API, no hay tracking. Todo se procesa en tu maquina.
+    </div>
 
-        <div class="tabs" role="tablist">
-            <button class="tab active" role="tab" aria-selected="true" data-tab="upload" onclick="showTab('upload', this)">Cargar Chats</button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="process" onclick="showTab('process', this)">Procesar</button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="results" onclick="showTab('results', this)">Resultados</button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="export" onclick="showTab('export', this)">Exportar</button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="help" onclick="showTab('help', this)">Ayuda</button>
-        </div>
+    <div class="header">
+        <h1>Analizador de Chats Claude</h1>
+        <p>Analiza tus conversaciones &mdash; 100% offline y privado</p>
+    </div>
 
-        <div id="upload" class="tab-content active" role="tabpanel">
-            <div class="card">
-                <h2>Subir Conversaciones de Claude</h2>
-                <p style="margin: 10px 0 20px; color: var(--text-muted);">
-                    Carga archivos desde tu USB, disco, o carpeta &mdash; o pega el texto directo.
-                </p>
+    <div class="tabs" id="tabs"></div>
 
-                <!-- File upload zone -->
-                <div class="drop-zone" id="dropZone"
-                     ondragover="handleDragOver(event)"
-                     ondragleave="handleDragLeave(event)"
-                     ondrop="handleDrop(event)"
-                     onclick="document.getElementById('fileInput').click()">
-                    <h3>Arrastra archivos aqui o haz click para seleccionar</h3>
-                    <p>Carga chats desde tu USB (D:, E:) o cualquier carpeta</p>
-                    <small>Acepta: .txt, .md, .json, .log, .csv, .html &mdash; Multiples archivos a la vez</small>
-                    <input type="file" id="fileInput" class="file-input-hidden"
-                           accept=".txt,.md,.json,.log,.csv,.html,.text"
-                           multiple
-                           onchange="handleFileSelect(this.files)">
-                </div>
-                <div class="loaded-files" id="loadedFiles"></div>
+    <!-- TAB 1: CARGAR -->
+    <div class="panel on" id="p-cargar">
+        <div class="card">
+            <h2>Cargar Chats</h2>
 
-                <div class="separator">o pega el texto manualmente</div>
-
-                <div>
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Titulo del Chat:</label>
-                    <input type="text" id="chatTitle" placeholder="ej: Proyecto Web, Analisis de datos..." maxlength="200">
-                </div>
-
-                <div>
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Contenido de la Conversacion:</label>
-                    <textarea
-                        id="chatInput"
-                        placeholder="Copia toda tu conversacion con Claude aqui...&#10;&#10;Incluye tanto tus mensajes como las respuestas de Claude.&#10;&#10;Ejemplo:&#10;Human: Puedes ayudarme con Python?&#10;Claude: Por supuesto! Te ayudo con Python..."
-                        rows="12"
-                        maxlength="500000"
-                        oninput="updateCharCount()"
-                    ></textarea>
-                    <div class="char-count" id="charCount">0 / 500,000 caracteres</div>
-                </div>
-
-                <button class="btn" onclick="addChat()">Agregar Chat Manual</button>
-
-                <div id="uploadStatus" class="hidden"></div>
+            <div class="drop" id="dropZone">
+                <h3>Arrastra archivos aqui o haz click</h3>
+                <p>Carga desde USB (D:, E:) o cualquier carpeta</p>
+                <p>.txt .md .json .log .csv .html &mdash; hasta 50 archivos</p>
+                <input type="file" id="fileIn" style="display:none"
+                       accept=".txt,.md,.json,.log,.csv,.html,.text" multiple>
             </div>
+            <div id="fileResults"></div>
 
-            <div class="card" id="chatsList" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3>Chats Cargados</h3>
-                    <button class="btn btn-danger btn-small" onclick="clearAllChats()">Borrar Todo</button>
-                </div>
-                <div id="chatsContainer"></div>
-            </div>
+            <div class="divider">o pega el texto</div>
+
+            <label>Titulo:</label>
+            <input type="text" id="inTitle" placeholder="ej: Proyecto Web, Consulta Python...">
+
+            <label>Conversacion:</label>
+            <textarea id="inText" rows="10" placeholder="Pega tu conversacion aqui...&#10;&#10;Human: Hola&#10;Claude: Hola! En que te ayudo?"></textarea>
+
+            <button class="btn" id="btnAdd">Agregar Chat</button>
+            <div id="addMsg"></div>
         </div>
 
-        <div id="process" class="tab-content" role="tabpanel">
-            <div class="card">
-                <h2>Procesar Analisis</h2>
+        <div class="card" id="listCard" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h2 style="margin:0">Chats Cargados</h2>
+                <button class="btn btn-red btn-sm" id="btnClearAll">Borrar Todo</button>
+            </div>
+            <div id="chatList"></div>
+        </div>
+    </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalChats">0</div>
-                        <div>Chats Cargados</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalWords">0</div>
-                        <div>Palabras Total</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalMessages">0</div>
-                        <div>Mensajes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="topicsFound">0</div>
-                        <div>Temas</div>
-                    </div>
+    <!-- TAB 2: ANALIZAR -->
+    <div class="panel" id="p-analizar">
+        <div class="card">
+            <h2>Analizar</h2>
+            <div class="stats">
+                <div class="stat"><div class="num" id="sChats">0</div><div class="lbl">CHATS</div></div>
+                <div class="stat"><div class="num" id="sWords">0</div><div class="lbl">PALABRAS</div></div>
+                <div class="stat"><div class="num" id="sMsgs">0</div><div class="lbl">MENSAJES</div></div>
+                <div class="stat"><div class="num" id="sTopics">0</div><div class="lbl">TEMAS</div></div>
+            </div>
+            <button class="btn" id="btnAnalyze">Iniciar Analisis</button>
+            <div id="analyzeMsg"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: RESULTADOS -->
+    <div class="panel" id="p-resultados">
+        <div class="card">
+            <h2>Resultados</h2>
+            <div id="results"><p style="text-align:center;color:#888;padding:30px;">Ejecuta el analisis primero</p></div>
+        </div>
+    </div>
+
+    <!-- TAB 4: EXPORTAR -->
+    <div class="panel" id="p-exportar">
+        <div class="card">
+            <h2>Exportar</h2>
+            <p style="color:#888;margin-bottom:15px;">Los archivos se crean en tu navegador. Nada se sube a internet.</p>
+            <div class="export-grid">
+                <div class="export-box">
+                    <h3>JSON</h3>
+                    <p>Analisis completo</p>
+                    <button class="btn btn-sm" id="btnJSON">Descargar</button>
                 </div>
-
-                <button class="btn" onclick="startProcessing()" id="processBtn">Iniciar Analisis Local</button>
-
-                <div id="processingProgress" class="hidden">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <span id="progressText">Procesando...</span>
-                    </div>
+                <div class="export-box">
+                    <h3>CSV</h3>
+                    <p>Para Excel</p>
+                    <button class="btn btn-sm" id="btnCSV">Descargar</button>
+                </div>
+                <div class="export-box">
+                    <h3>Imprimir</h3>
+                    <p>Version impresa</p>
+                    <button class="btn btn-sm" id="btnPrint">Imprimir</button>
                 </div>
             </div>
-        </div>
-
-        <div id="results" class="tab-content" role="tabpanel">
-            <div class="card">
-                <h2>Resultados del Analisis</h2>
-                <div id="analysisResults">
-                    <p style="text-align: center; color: var(--text-muted); padding: 40px;">
-                        Los resultados apareceran aqui despues del analisis
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div id="export" class="tab-content" role="tabpanel">
-            <div class="card">
-                <h2>Exportar Resultados</h2>
-                <p style="margin-bottom: 20px; color: var(--text-muted);">Los archivos se generan en tu navegador. Nada se sube a internet.</p>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
-                        <h3>Reporte JSON</h3>
-                        <p style="margin: 15px 0; color: var(--text-muted);">Analisis completo estructurado</p>
-                        <button class="btn" onclick="exportJSON()">Descargar JSON</button>
-                    </div>
-
-                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
-                        <h3>Datos CSV</h3>
-                        <p style="margin: 15px 0; color: var(--text-muted);">Para analisis en Excel</p>
-                        <button class="btn" onclick="exportCSV()">Exportar CSV</button>
-                    </div>
-
-                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--accent); border-radius: 15px;">
-                        <h3>Imprimir</h3>
-                        <p style="margin: 15px 0; color: var(--text-muted);">Version para imprimir o PDF</p>
-                        <button class="btn" onclick="window.print()">Imprimir</button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 30px; padding: 20px; border: 2px dashed var(--red); border-radius: 15px; text-align: center;">
-                    <h3>Borrar Todos los Datos</h3>
-                    <p style="margin: 15px 0; color: var(--text-muted);">Elimina todos los chats y analisis guardados en tu navegador</p>
-                    <button class="btn btn-danger" onclick="clearAllData()">Borrar Todo Permanentemente</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="help" class="tab-content" role="tabpanel">
-            <div class="card">
-                <h2>Guia de Uso</h2>
-
-                <div style="margin-bottom: 30px;">
-                    <h3>Privacidad</h3>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li><strong>Sin servidor:</strong> No hay backend ni API. Todo corre en JavaScript en tu navegador.</li>
-                        <li><strong>Sin red:</strong> Puedes desconectar internet y la app sigue funcionando.</li>
-                        <li><strong>localStorage:</strong> Tus datos se guardan solo en tu navegador, en tu maquina.</li>
-                        <li><strong>Borrado total:</strong> El boton "Borrar Todo" elimina todo de tu navegador.</li>
-                        <li><strong>Sin tracking:</strong> No hay Google Analytics, cookies de terceros, ni telemetria.</li>
-                    </ul>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3>Inicio Rapido</h3>
-                    <ol style="margin-left: 20px; line-height: 1.8;">
-                        <li><strong>Desde USB/disco:</strong> Arrastra archivos al area de carga, o haz click para navegar a tu USB (D:, E:, etc.)</li>
-                        <li><strong>Pegar texto:</strong> Copia chats de Claude y pegalos en el textarea</li>
-                        <li>Ve a "Procesar" y ejecuta el analisis</li>
-                        <li>Revisa los resultados: proyectos, temas, tecnologias</li>
-                        <li>Exporta en JSON o CSV si necesitas</li>
-                    </ol>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3>Cargar desde USB o Disco</h3>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>Soporta archivos: .txt, .md, .json, .log, .csv, .html</li>
-                        <li>Puedes seleccionar hasta 50 archivos a la vez</li>
-                        <li>Maximo 2MB por archivo (chats muy largos se recortan a 500K caracteres)</li>
-                        <li>Archivos JSON se parsean automaticamente (formato Claude, ChatGPT, etc.)</li>
-                        <li>Los archivos se leen en tu navegador &mdash; nunca se suben a ningun servidor</li>
-                        <li>Tambien puedes arrastrar carpetas enteras al area de carga</li>
-                    </ul>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3>Que Analiza</h3>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li><strong>Proyectos:</strong> Detecta proyectos por keywords como "proyecto", "app", "sistema", "crear", "desarrollar"</li>
-                        <li><strong>Tecnologias:</strong> Identifica 80+ lenguajes, frameworks y herramientas mencionados</li>
-                        <li><strong>Temas:</strong> Clasifica conversaciones por area (web, datos, IA, devops, etc.)</li>
-                        <li><strong>Patrones:</strong> Tipo de consultas (codigo, explicacion, debug, diseno)</li>
-                        <li><strong>Estadisticas:</strong> Palabras, mensajes, ratio pregunta/respuesta</li>
-                    </ul>
-                </div>
+            <div style="margin-top:25px;text-align:center;">
+                <button class="btn btn-red" id="btnNuke">Borrar Todos los Datos</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // ── Security: escape HTML to prevent XSS ──
-        function esc(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
+    <!-- TAB 5: IA LOCAL -->
+    <div class="panel" id="p-ollama">
+        <div class="card">
+            <h2>IA Local (Ollama)</h2>
+            <p style="color:#888;margin-bottom:15px;">Conecta con Ollama en tu maquina para analisis con IA real. 100% privado — nada sale de tu PC.</p>
 
-        // ── Persistence: localStorage ──
-        const STORAGE_KEY = 'claude-analyzer-data';
+            <div class="ollama-box">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <b>Estado:</b> <span class="ollama-status ollama-off" id="ollamaStatus">Desconectado</span>
+                    </div>
+                    <button class="btn btn-sm" id="btnOllamaConnect">Conectar</button>
+                </div>
+                <div id="ollamaModels" style="margin-top:12px;display:none;">
+                    <b>Modelos disponibles:</b>
+                    <div class="ollama-model-list" id="ollamaModelList"></div>
+                </div>
+            </div>
 
-        function loadData() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) return JSON.parse(raw);
-            } catch (e) { console.error('Error loading data:', e); }
-            return { chats: [], analysis: null };
-        }
+            <div class="ollama-box" id="ollamaActions" style="display:none;">
+                <h3 style="margin-bottom:12px;">Analizar con IA</h3>
+                <p style="color:#888;font-size:13px;margin-bottom:12px;">Envia tus chats al modelo local para un analisis profundo con IA.</p>
 
-        function saveData() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(chatData));
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    showStatus('Almacenamiento lleno. Borra algunos chats para continuar.', 'error');
-                }
-            }
-        }
+                <label>Pregunta personalizada (opcional):</label>
+                <input type="text" id="ollamaPrompt" placeholder="ej: Que patrones ves en mis consultas?">
 
-        let chatData = loadData();
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn" id="btnOllamaAnalyze">Analizar con IA</button>
+                    <button class="btn btn-sm" id="btnOllamaSummary" style="background:#4caf50;">Resumen Rapido</button>
+                    <button class="btn btn-sm" id="btnOllamaAdvice" style="background:#1565c0;">Consejos</button>
+                </div>
+                <div id="ollamaMsg"></div>
+                <div id="ollamaResult"></div>
+            </div>
 
-        // ── Tab management (fixed: uses currentTarget) ──
-        function showTab(tabName, btn) {
-            document.querySelectorAll('.tab-content').forEach(function(tab) {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(function(tab) {
-                tab.classList.remove('active');
-                tab.setAttribute('aria-selected', 'false');
-            });
-            document.getElementById(tabName).classList.add('active');
-            btn.classList.add('active');
-            btn.setAttribute('aria-selected', 'true');
-        }
+            <div class="card" style="margin-top:15px;background:#fff8f0;border:1px solid #ffe0b2;">
+                <h3 style="margin-bottom:8px;">Como instalar Ollama</h3>
+                <ol style="font-size:14px;">
+                    <li>Ve a <b>ollama.com</b> y descarga el instalador</li>
+                    <li>Instala y abrelo (se ejecuta en segundo plano)</li>
+                    <li>Abre terminal y ejecuta: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code></li>
+                    <li>Regresa aqui y haz click en <b>Conectar</b></li>
+                </ol>
+                <p style="font-size:12px;color:#888;margin-top:10px;">Ollama corre en tu maquina (localhost:11434). Ningun dato sale de tu PC.</p>
+            </div>
+        </div>
+    </div>
 
-        // ── File upload: drag & drop + file picker ──
-        var ALLOWED_EXTENSIONS = ['.txt', '.md', '.json', '.log', '.csv', '.html', '.text'];
-        var MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB per file
-        var MAX_FILES_AT_ONCE = 50;
+    <!-- TAB 6: AYUDA -->
+    <div class="panel" id="p-ayuda">
+        <div class="card">
+            <h2>Ayuda</h2>
+            <h3>Como usar</h3>
+            <ol>
+                <li><b>Desde USB:</b> Arrastra archivos al area de carga o haz click para navegar a D:, E:, etc.</li>
+                <li><b>Pegar texto:</b> Copia chats de Claude y pegalos en el campo de texto</li>
+                <li>Ve a <b>Analizar</b> y haz click en el boton</li>
+                <li>Revisa <b>Resultados</b></li>
+                <li><b>Exporta</b> en JSON o CSV</li>
+            </ol>
+            <h3>Archivos soportados</h3>
+            <ul>
+                <li>.txt, .md, .json, .log, .csv, .html</li>
+                <li>Hasta 50 archivos a la vez, 2MB cada uno</li>
+                <li>JSON se parsea automaticamente (formato Claude, ChatGPT, etc.)</li>
+            </ul>
+            <h3>IA Local (Ollama)</h3>
+            <ul>
+                <li>Instala <b>Ollama</b> desde ollama.com (gratis, local)</li>
+                <li>Ejecuta <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code> para descargar un modelo</li>
+                <li>Haz click en <b>Conectar</b> en la tab "IA Local"</li>
+                <li>Ollama corre en tu maquina — ningun dato sale de tu PC</li>
+            </ul>
+            <h3>Privacidad</h3>
+            <ul>
+                <li>No hay servidor ni API — todo corre en tu navegador</li>
+                <li>Funciona sin internet (excepto IA Local que usa Ollama en localhost)</li>
+                <li>Datos guardados solo en tu maquina (localStorage)</li>
+                <li>Sin tracking, sin cookies, sin telemetria</li>
+            </ul>
+        </div>
+    </div>
+</div>
 
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropZone').classList.add('drag-over');
-        }
+<script>
+// ── Escape HTML ──
+function E(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+}
 
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropZone').classList.remove('drag-over');
-        }
+// ── Storage ──
+var KEY = 'claude-chats';
+var D = load();
 
-        function handleDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropZone').classList.remove('drag-over');
-            var files = e.dataTransfer.files;
-            if (files.length > 0) handleFileSelect(files);
-        }
+function load() {
+    try { var r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e) {}
+    return { chats: [], analysis: null };
+}
+function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e) {}
+}
 
-        function handleFileSelect(files) {
-            if (!files || files.length === 0) return;
+// ── Tabs ──
+var tabNames = ['Cargar', 'Analizar', 'Resultados', 'Exportar', 'IA Local', 'Ayuda'];
+var tabIds = ['p-cargar', 'p-analizar', 'p-resultados', 'p-exportar', 'p-ollama', 'p-ayuda'];
 
-            if (files.length > MAX_FILES_AT_ONCE) {
-                showStatus('Maximo ' + MAX_FILES_AT_ONCE + ' archivos a la vez. Seleccionaste ' + files.length, 'error');
-                return;
-            }
+function buildTabs() {
+    var c = document.getElementById('tabs');
+    c.innerHTML = '';
+    tabNames.forEach(function(name, i) {
+        var b = document.createElement('button');
+        b.textContent = name;
+        b.className = i === 0 ? 'on' : '';
+        b.onclick = function() { switchTab(i); };
+        c.appendChild(b);
+    });
+}
 
-            var loaded = 0;
-            var skipped = 0;
-            var errors = [];
-            var totalFiles = files.length;
-            var filesDiv = document.getElementById('loadedFiles');
-            filesDiv.innerHTML = '';
+function switchTab(idx) {
+    var btns = document.getElementById('tabs').children;
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = i === idx ? 'on' : '';
+    }
+    tabIds.forEach(function(id, i) {
+        document.getElementById(id).className = i === idx ? 'panel on' : 'panel';
+    });
+}
 
-            Array.from(files).forEach(function(file) {
-                // Check extension
-                var name = file.name.toLowerCase();
-                var validExt = ALLOWED_EXTENSIONS.some(function(ext) { return name.endsWith(ext); });
-                if (!validExt) {
-                    skipped++;
-                    errors.push(file.name + ' (tipo no soportado)');
-                    checkDone();
-                    return;
-                }
+// ── Make unique ID ──
+var idCounter = 0;
+function makeId() {
+    idCounter++;
+    return Date.now() + '-' + idCounter + '-' + Math.random().toString(36).slice(2, 8);
+}
 
-                // Check size
-                if (file.size > MAX_FILE_SIZE) {
-                    skipped++;
-                    errors.push(file.name + ' (excede 2MB)');
-                    checkDone();
-                    return;
-                }
+// ── Add chat ──
+function addChat() {
+    var title = document.getElementById('inTitle').value.trim();
+    var text = document.getElementById('inText').value.trim();
+    if (!title || !text) { showMsg('addMsg', 'Escribe titulo y contenido', 'err'); return; }
+    if (text.length > 500000) { showMsg('addMsg', 'Maximo 500,000 caracteres', 'err'); return; }
 
-                if (file.size === 0) {
-                    skipped++;
-                    errors.push(file.name + ' (archivo vacio)');
-                    checkDone();
-                    return;
-                }
+    D.chats.push({
+        id: makeId(),
+        title: title,
+        content: text,
+        words: text.split(/\s+/).filter(Boolean).length,
+        source: 'manual'
+    });
+    D.analysis = null;
+    save();
+    document.getElementById('inTitle').value = '';
+    document.getElementById('inText').value = '';
+    showMsg('addMsg', 'Chat "' + E(title) + '" agregado', 'ok');
+    renderList();
+    updateStats();
+}
 
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var content = e.target.result;
+// ── Render chat list ──
+function renderList() {
+    var box = document.getElementById('listCard');
+    var c = document.getElementById('chatList');
+    if (D.chats.length === 0) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    c.innerHTML = '';
+    D.chats.forEach(function(chat, i) {
+        var row = document.createElement('div');
+        row.className = 'chat-row';
 
-                    // If JSON, try to extract chat content
-                    if (name.endsWith('.json')) {
-                        content = parseJsonChat(content, file.name);
-                    }
+        var info = document.createElement('div');
+        var b = document.createElement('b');
+        b.textContent = (i + 1) + '. ' + chat.title;
+        info.appendChild(b);
 
-                    if (!content || content.trim().length === 0) {
-                        skipped++;
-                        errors.push(file.name + ' (sin contenido legible)');
-                        checkDone();
-                        return;
-                    }
+        var sm = document.createElement('small');
+        sm.style.display = 'block';
+        var meta = chat.words.toLocaleString() + ' palabras';
+        if (chat.source === 'file' && chat.fileName) meta += ' | Archivo: ' + chat.fileName;
+        sm.textContent = meta;
+        info.appendChild(sm);
 
-                    // Strip HTML tags if .html file
-                    if (name.endsWith('.html')) {
-                        content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
-                        content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
-                        content = content.replace(/<[^>]+>/g, ' ');
-                        content = content.replace(/\s{2,}/g, ' ').trim();
-                    }
-
-                    var title = file.name.replace(/\.[^.]+$/, '');
-
-                    var chat = {
-                        id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),
-                        title: title,
-                        content: content.slice(0, 500000),
-                        wordCount: content.split(/\s+/).filter(Boolean).length,
-                        addedAt: new Date().toISOString(),
-                        source: 'file',
-                        fileName: file.name,
-                        fileSize: file.size
-                    };
-
-                    chatData.chats.push(chat);
-                    loaded++;
-
-                    // Show loaded file
-                    var fileEl = document.createElement('div');
-                    fileEl.className = 'loaded-file';
-                    fileEl.innerHTML = '<span>' + esc(file.name) + ' (' + formatSize(file.size) + ')</span><span>Cargado</span>';
-                    filesDiv.appendChild(fileEl);
-
-                    checkDone();
-                };
-
-                reader.onerror = function() {
-                    skipped++;
-                    errors.push(file.name + ' (error de lectura)');
-                    checkDone();
-                };
-
-                reader.readAsText(file, 'UTF-8');
-
-                function checkDone() {
-                    if (loaded + skipped === totalFiles) {
-                        chatData.analysis = null;
-                        saveData();
-                        updateChatsList();
-                        updateStats();
-
-                        var msg = loaded + ' archivo(s) cargado(s)';
-                        if (skipped > 0) msg += ', ' + skipped + ' omitido(s)';
-                        showStatus(msg, loaded > 0 ? 'success' : 'error');
-
-                        if (errors.length > 0) {
-                            var errDiv = document.createElement('div');
-                            errDiv.style.cssText = 'font-size:12px;color:var(--text-muted);margin-top:8px;';
-                            errDiv.textContent = 'Omitidos: ' + errors.join(', ');
-                            filesDiv.appendChild(errDiv);
-                        }
-
-                        // Reset file input so same files can be re-selected
-                        document.getElementById('fileInput').value = '';
-                    }
-                }
-            });
-        }
-
-        function parseJsonChat(raw, fileName) {
-            try {
-                var data = JSON.parse(raw);
-
-                // Claude export format: array of messages
-                if (Array.isArray(data)) {
-                    return data.map(function(msg) {
-                        var role = msg.role || msg.sender || msg.type || 'unknown';
-                        var text = msg.content || msg.text || msg.message || '';
-                        if (typeof text === 'object') text = JSON.stringify(text);
-                        return role + ': ' + text;
-                    }).join('\n\n');
-                }
-
-                // Object with messages array
-                if (data.messages && Array.isArray(data.messages)) {
-                    return data.messages.map(function(msg) {
-                        var role = msg.role || msg.sender || 'unknown';
-                        var text = msg.content || msg.text || msg.message || '';
-                        if (typeof text === 'object') text = JSON.stringify(text);
-                        return role + ': ' + text;
-                    }).join('\n\n');
-                }
-
-                // Object with chat_messages
-                if (data.chat_messages && Array.isArray(data.chat_messages)) {
-                    return data.chat_messages.map(function(msg) {
-                        var role = msg.sender || msg.role || 'unknown';
-                        var text = msg.text || msg.content || '';
-                        return role + ': ' + text;
-                    }).join('\n\n');
-                }
-
-                // Single message object
-                if (data.content || data.text) {
-                    return data.content || data.text;
-                }
-
-                // Fallback: stringify the whole thing
-                return JSON.stringify(data, null, 2);
-            } catch (e) {
-                return raw;
-            }
-        }
-
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        // ── Character count ──
-        function updateCharCount() {
-            var input = document.getElementById('chatInput');
-            var count = document.getElementById('charCount');
-            var len = input.value.length;
-            count.textContent = len.toLocaleString() + ' / 500,000 caracteres';
-            if (len > 450000) count.style.color = 'var(--red)';
-            else count.style.color = 'var(--text-light)';
-        }
-
-        // ── Add chat ──
-        function addChat() {
-            var title = document.getElementById('chatTitle').value.trim();
-            var content = document.getElementById('chatInput').value.trim();
-
-            if (!title || !content) {
-                showStatus('Completa el titulo y contenido del chat', 'error');
-                return;
-            }
-
-            if (content.length > 500000) {
-                showStatus('El contenido excede 500,000 caracteres. Divide el chat en partes.', 'error');
-                return;
-            }
-
-            var chat = {
-                id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),
-                title: title,
-                content: content,
-                wordCount: content.split(/\s+/).filter(Boolean).length,
-                addedAt: new Date().toISOString()
-            };
-
-            chatData.chats.push(chat);
-            chatData.analysis = null;
-            saveData();
-            updateChatsList();
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-red btn-sm';
+        btn.textContent = 'X';
+        btn.onclick = function() {
+            if (!confirm('Borrar este chat?')) return;
+            D.chats = D.chats.filter(function(c) { return c.id !== chat.id; });
+            D.analysis = null;
+            save();
+            renderList();
             updateStats();
-
-            document.getElementById('chatTitle').value = '';
-            document.getElementById('chatInput').value = '';
-            updateCharCount();
-
-            showStatus('Chat "' + esc(title) + '" agregado', 'success');
-        }
-
-        // ── Update chats list ──
-        function updateChatsList() {
-            var container = document.getElementById('chatsContainer');
-            var listDiv = document.getElementById('chatsList');
-
-            if (chatData.chats.length === 0) {
-                listDiv.style.display = 'none';
-                return;
-            }
-
-            listDiv.style.display = 'block';
-            container.innerHTML = '';
-
-            chatData.chats.forEach(function(chat, index) {
-                var div = document.createElement('div');
-                div.className = 'chat-item';
-
-                var row = document.createElement('div');
-                row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
-
-                var info = document.createElement('div');
-                info.style.flex = '1';
-
-                var titleEl = document.createElement('strong');
-                titleEl.textContent = (index + 1) + '. ' + chat.title;
-                info.appendChild(titleEl);
-
-                var meta = document.createElement('div');
-                meta.style.cssText = 'font-size:0.9em;color:var(--text-muted);margin-top:5px;';
-                var metaText = chat.wordCount.toLocaleString() + ' palabras';
-                if (chat.source === 'file') {
-                    metaText += ' · Archivo: ' + (chat.fileName || 'desconocido');
-                    if (chat.fileSize) metaText += ' (' + formatSize(chat.fileSize) + ')';
-                }
-                meta.textContent = metaText;
-                info.appendChild(meta);
-
-                var btn = document.createElement('button');
-                btn.className = 'delete-btn';
-                btn.textContent = 'Borrar';
-                btn.setAttribute('aria-label', 'Borrar chat ' + chat.title);
-                btn.onclick = function() { removeChat(chat.id); };
-
-                row.appendChild(info);
-                row.appendChild(btn);
-                div.appendChild(row);
-                container.appendChild(div);
-            });
-        }
-
-        // ── Remove chat ──
-        function removeChat(chatId) {
-            if (!confirm('Eliminar este chat?')) return;
-            chatData.chats = chatData.chats.filter(function(c) { return c.id !== chatId; });
-            chatData.analysis = null;
-            saveData();
-            updateChatsList();
-            updateStats();
-        }
-
-        // ── Clear all ──
-        function clearAllChats() {
-            if (!confirm('Borrar TODOS los chats cargados?')) return;
-            chatData.chats = [];
-            chatData.analysis = null;
-            saveData();
-            updateChatsList();
-            updateStats();
-        }
-
-        function clearAllData() {
-            if (!confirm('Esto borra TODOS tus datos permanentemente. Continuar?')) return;
-            chatData = { chats: [], analysis: null };
-            localStorage.removeItem(STORAGE_KEY);
-            updateChatsList();
-            updateStats();
-            document.getElementById('analysisResults').innerHTML =
-                '<p style="text-align:center;color:var(--text-muted);padding:40px;">Datos borrados</p>';
-            showStatus('Todos los datos han sido eliminados de tu navegador', 'success');
-        }
-
-        // ── Stats ──
-        function updateStats() {
-            document.getElementById('totalChats').textContent = chatData.chats.length;
-            document.getElementById('totalWords').textContent =
-                chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0).toLocaleString();
-
-            var totalMsgs = 0;
-            chatData.chats.forEach(function(c) {
-                totalMsgs += (c.content.match(/\b(Human|Usuario|User|Claude|Assistant)\s*:/gi) || []).length;
-            });
-            document.getElementById('totalMessages').textContent = totalMsgs;
-
-            var topics = chatData.analysis && chatData.analysis.mainTopics ? chatData.analysis.mainTopics.length : 0;
-            document.getElementById('topicsFound').textContent = topics;
-        }
-
-        // ══════════════════════════════════════════════════════
-        //  LOCAL ANALYSIS ENGINE — no API, no network, 100% JS
-        // ══════════════════════════════════════════════════════
-
-        var TECH_PATTERNS = {
-            'Python': /\bpython\b/i,
-            'JavaScript': /\bjavascript\b|\bJS\b|\bnode\.?js\b/i,
-            'TypeScript': /\btypescript\b|\bTS\b/i,
-            'React': /\breact\b|\bjsx\b|\btsx\b/i,
-            'Vue': /\bvue\.?js?\b|\bvuex\b|\bnuxt\b/i,
-            'Angular': /\bangular\b/i,
-            'Next.js': /\bnext\.?js\b/i,
-            'HTML': /\bhtml\b|\bhtml5\b/i,
-            'CSS': /\bcss\b|\bcss3\b|\bsass\b|\bscss\b|\btailwind\b|\bbootstrap\b/i,
-            'SQL': /\bsql\b|\bmysql\b|\bpostgres\b|\bsqlite\b|\bmariadb\b/i,
-            'MongoDB': /\bmongo\b|\bmongodb\b|\bmongoose\b/i,
-            'Docker': /\bdocker\b|\bcontainer\b|\bdockerfile\b/i,
-            'Git': /\bgit\b|\bgithub\b|\bgitlab\b/i,
-            'AWS': /\baws\b|\bs3\b|\bec2\b|\blambda\b|\bdynamo\b/i,
-            'Firebase': /\bfirebase\b|\bfirestore\b/i,
-            'PHP': /\bphp\b|\blaravel\b|\bwordpress\b/i,
-            'Java': /\bjava\b(?!script)/i,
-            'C#': /\bc#\b|\.net\b|\bcsharp\b/i,
-            'Ruby': /\bruby\b|\brails\b/i,
-            'Go': /\bgolang\b|\bgo\s+(lang|module|routine)\b/i,
-            'Rust': /\brust\b|\bcargo\b/i,
-            'Swift': /\bswift\b|\bswiftui\b/i,
-            'Kotlin': /\bkotlin\b/i,
-            'Flutter': /\bflutter\b|\bdart\b/i,
-            'React Native': /\breact\s*native\b/i,
-            'Django': /\bdjango\b/i,
-            'Flask': /\bflask\b/i,
-            'FastAPI': /\bfastapi\b/i,
-            'Express': /\bexpress\.?js?\b/i,
-            'Redis': /\bredis\b/i,
-            'GraphQL': /\bgraphql\b/i,
-            'REST API': /\brest\s*api\b|\bapi\s*rest\b|\bendpoint\b/i,
-            'Kubernetes': /\bkubernetes\b|\bk8s\b/i,
-            'Terraform': /\bterraform\b/i,
-            'Linux': /\blinux\b|\bubuntu\b|\bdebian\b|\bbash\b/i,
-            'TensorFlow': /\btensorflow\b|\btf\.\b/i,
-            'PyTorch': /\bpytorch\b|\btorch\.\b/i,
-            'Pandas': /\bpandas\b/i,
-            'NumPy': /\bnumpy\b/i,
-            'Selenium': /\bselenium\b/i,
-            'Playwright': /\bplaywright\b/i,
-            'Supabase': /\bsupabase\b/i,
-            'Vercel': /\bvercel\b/i,
-            'Netlify': /\bnetlify\b/i,
-            'Figma': /\bfigma\b/i,
-            'Stripe': /\bstripe\b/i,
-            'OpenAI': /\bopenai\b|\bgpt\b|\bchatgpt\b/i,
-            'Claude': /\bclaude\b|\banthropic\b/i,
-            'Svelte': /\bsvelte\b/i,
-            'Astro': /\bastro\b/i,
-            'Vite': /\bvite\b/i,
-            'Webpack': /\bwebpack\b/i,
-            'Nginx': /\bnginx\b/i,
-            'Apache': /\bapache\b/i
         };
 
-        var TOPIC_CATEGORIES = {
-            'Desarrollo Web': /\bweb\b|\bfrontend\b|\bbackend\b|\bfull.?stack\b|\bresponsive\b|\blanding\b|\bpagina\b|\bsitio\b/i,
-            'Base de Datos': /\bbase\s*de\s*datos\b|\bdatabase\b|\bsql\b|\bquery\b|\btabla\b|\brelacion\b|\bschema\b/i,
-            'IA / Machine Learning': /\binteligencia\s*artificial\b|\bmachine\s*learning\b|\bml\b|\bmodelo\b|\bentrenar\b|\bneurona\b|\bdeep\s*learning\b|\bllm\b|\bgpt\b|\bprompt\b/i,
-            'Automatizacion': /\bautomati[zs]\b|\bscript\b|\bbot\b|\bscraping\b|\bscraper\b|\bcron\b|\bschedule\b/i,
-            'Analisis de Datos': /\banalisis\b|\bdata\b|\bgrafica\b|\bvisuali[zs]\b|\bestadistic\b|\breporte\b|\bdashboard\b/i,
-            'Mobile': /\bmovil\b|\bmobile\b|\bandroid\b|\bios\b|\bapp\b|\baplicacion\b/i,
-            'DevOps / Infra': /\bdevops\b|\bdeploy\b|\bci.?cd\b|\bservidor\b|\bserver\b|\bcloud\b|\bhosting\b|\binfra\b/i,
-            'Seguridad': /\bsegurid\b|\bsecurity\b|\bauth\b|\btoken\b|\bencript\b|\bhash\b|\bvulnerab\b|\bxss\b|\bsql\s*inject\b/i,
-            'API': /\bapi\b|\bendpoint\b|\brest\b|\bgraphql\b|\bwebhook\b|\bintegra\b/i,
-            'Diseno / UI': /\bdise[ñn]o\b|\bui\b|\bux\b|\binterfaz\b|\bestilo\b|\blayout\b|\bcomponent\b/i,
-            'Testing': /\btest\b|\bprueba\b|\bunit\b|\be2e\b|\bqa\b|\bbug\b|\bdebug\b/i,
-            'Negocio / Productividad': /\bnegocio\b|\bbusiness\b|\bempresa\b|\bproductiv\b|\bgestio\b|\bmanage\b|\borganiz\b/i
+        row.appendChild(info);
+        row.appendChild(btn);
+        c.appendChild(row);
+    });
+}
+
+// ── Stats ──
+function updateStats() {
+    document.getElementById('sChats').textContent = D.chats.length;
+    var w = 0;
+    D.chats.forEach(function(c) { w += c.words; });
+    document.getElementById('sWords').textContent = w.toLocaleString();
+
+    var msgs = 0;
+    D.chats.forEach(function(c) {
+        var m = c.content.match(/\b(Human|Usuario|User|Claude|Assistant)\s*:/gi);
+        if (m) msgs += m.length;
+    });
+    document.getElementById('sMsgs').textContent = msgs;
+
+    var t = D.analysis && D.analysis.topics ? D.analysis.topics.length : 0;
+    document.getElementById('sTopics').textContent = t;
+}
+
+// ── File upload ──
+var dropZone = document.getElementById('dropZone');
+var fileIn = document.getElementById('fileIn');
+
+dropZone.onclick = function() { fileIn.click(); };
+dropZone.ondragover = function(e) { e.preventDefault(); dropZone.classList.add('over'); };
+dropZone.ondragleave = function(e) { e.preventDefault(); dropZone.classList.remove('over'); };
+dropZone.ondrop = function(e) {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    loadFiles(e.dataTransfer.files);
+};
+fileIn.onchange = function() { loadFiles(fileIn.files); fileIn.value = ''; };
+
+function loadFiles(files) {
+    if (!files || files.length === 0) return;
+    if (files.length > 50) { showMsg('addMsg', 'Maximo 50 archivos', 'err'); return; }
+
+    var ok = 0, skip = 0, total = files.length;
+    var resDiv = document.getElementById('fileResults');
+    resDiv.innerHTML = '';
+
+    Array.from(files).forEach(function(file) {
+        var name = file.name.toLowerCase();
+        var valid = ['.txt','.md','.json','.log','.csv','.html','.text'].some(function(e) { return name.endsWith(e); });
+
+        if (!valid || file.size > 2097152 || file.size === 0) {
+            skip++;
+            done();
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            var text = ev.target.result || '';
+
+            if (name.endsWith('.json')) text = parseJson(text);
+            if (name.endsWith('.html')) {
+                text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
+                text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
+                text = text.replace(/<[^>]+>/g, ' ');
+                text = text.replace(/\s{2,}/g, ' ').trim();
+            }
+
+            if (!text.trim()) { skip++; done(); return; }
+
+            D.chats.push({
+                id: makeId(),
+                title: file.name.replace(/\.[^.]+$/, ''),
+                content: text.slice(0, 500000),
+                words: text.split(/\s+/).filter(Boolean).length,
+                source: 'file',
+                fileName: file.name
+            });
+            ok++;
+
+            var d = document.createElement('div');
+            d.className = 'file-ok';
+            d.textContent = file.name + ' cargado';
+            resDiv.appendChild(d);
+            done();
         };
+        reader.onerror = function() { skip++; done(); };
+        reader.readAsText(file, 'UTF-8');
+    });
 
-        var QUERY_TYPES = {
-            'Generar codigo': /\b(crea|genera|haz|escribe|programa|implementa|desarrolla|construye|monta)\b/i,
-            'Explicacion': /\b(explica|que\s+es|como\s+funciona|diferencia|significa|concepto|ense[ñn]a)\b/i,
-            'Debug / Fix': /\b(error|bug|falla|no\s+funciona|corregir|arregla|soluciona|problema|rompe|crash)\b/i,
-            'Mejora': /\b(mejora|optimiz|refactor|rendimiento|performance|rapido|eficien)\b/i,
-            'Diseno / Arquitectura': /\b(arquitectura|estructura|patron|dise[ñn]a|organiza|planea|estrategia)\b/i,
-            'Configuracion': /\b(configura|instala|setup|deploy|conecta|integra)\b/i
-        };
-
-        function analyzeLocally() {
-            var allContent = chatData.chats.map(function(c) { return c.content; }).join('\n\n');
-            var allTitles = chatData.chats.map(function(c) { return c.title; });
-
-            // 1. Detect technologies
-            var techFound = [];
-            Object.keys(TECH_PATTERNS).forEach(function(tech) {
-                var matches = allContent.match(TECH_PATTERNS[tech]);
-                if (matches) {
-                    var count = (allContent.match(new RegExp(TECH_PATTERNS[tech].source, 'gi')) || []).length;
-                    techFound.push({ tool: tech, frequency: count, usage: 'Mencionado en conversaciones' });
-                }
-            });
-            techFound.sort(function(a, b) { return b.frequency - a.frequency; });
-
-            // 2. Detect topics per chat
-            var topicCounts = {};
-            var topicChats = {};
-
-            chatData.chats.forEach(function(chat) {
-                var text = chat.title + ' ' + chat.content;
-                Object.keys(TOPIC_CATEGORIES).forEach(function(topic) {
-                    if (TOPIC_CATEGORIES[topic].test(text)) {
-                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-                        if (!topicChats[topic]) topicChats[topic] = [];
-                        if (topicChats[topic].indexOf(chat.title) === -1) {
-                            topicChats[topic].push(chat.title);
-                        }
-                    }
-                });
-            });
-
-            var mainTopics = Object.keys(topicCounts).map(function(topic) {
-                return { topic: topic, frequency: topicCounts[topic], relatedChats: topicChats[topic] || [] };
-            });
-            mainTopics.sort(function(a, b) { return b.frequency - a.frequency; });
-
-            // 3. Detect projects
-            var projects = [];
-            var projectRe = /(?:proyecto|app|aplicacion|sistema|plataforma|herramienta|pagina|sitio|bot|dashboard|portal)\s+(?:de\s+|para\s+|llamad[oa]\s+)?["']?([A-ZÀ-ɏ][A-Za-zÀ-ɏ0-9\s-]{1,40})/gi;
-            var projectNames = new Set();
-
-            chatData.chats.forEach(function(chat) {
-                var text = chat.title + ' ' + chat.content;
-                var m;
-                while ((m = projectRe.exec(text)) !== null) {
-                    var name = m[1].trim().replace(/\s+/g, ' ');
-                    if (name.length > 2 && !projectNames.has(name.toLowerCase())) {
-                        projectNames.add(name.toLowerCase());
-                        var techs = [];
-                        Object.keys(TECH_PATTERNS).forEach(function(tech) {
-                            if (TECH_PATTERNS[tech].test(chat.content)) techs.push(tech);
-                        });
-                        projects.push({
-                            name: name,
-                            description: 'Detectado en: ' + chat.title,
-                            status: 'mencionado',
-                            technologies: techs.slice(0, 5),
-                            chatSources: [chat.title]
-                        });
-                    }
-                }
-            });
-
-            if (projects.length === 0 && chatData.chats.length > 0) {
-                chatData.chats.forEach(function(chat) {
-                    var techs = [];
-                    Object.keys(TECH_PATTERNS).forEach(function(tech) {
-                        if (TECH_PATTERNS[tech].test(chat.content)) techs.push(tech);
-                    });
-                    if (techs.length > 0) {
-                        projects.push({
-                            name: chat.title,
-                            description: 'Basado en el titulo del chat',
-                            status: 'detectado',
-                            technologies: techs.slice(0, 5),
-                            chatSources: [chat.title]
-                        });
-                    }
-                });
-            }
-
-            // 4. Query type analysis
-            var queryTypeCounts = {};
-            chatData.chats.forEach(function(chat) {
-                var userParts = chat.content.split(/\b(?:Human|Usuario|User)\s*:/i);
-                userParts.forEach(function(part) {
-                    Object.keys(QUERY_TYPES).forEach(function(qt) {
-                        if (QUERY_TYPES[qt].test(part)) {
-                            queryTypeCounts[qt] = (queryTypeCounts[qt] || 0) + 1;
-                        }
-                    });
-                });
-            });
-
-            var insights = [];
-            var sortedQueryTypes = Object.keys(queryTypeCounts).sort(function(a, b) { return queryTypeCounts[b] - queryTypeCounts[a]; });
-
-            if (sortedQueryTypes.length > 0) {
-                insights.push({
-                    insight: 'Tu tipo de consulta mas frecuente es "' + sortedQueryTypes[0] + '" (' + queryTypeCounts[sortedQueryTypes[0]] + ' veces)',
-                    category: 'tecnico',
-                    importance: 'alta'
-                });
-            }
-
-            if (techFound.length > 0) {
-                insights.push({
-                    insight: 'Tu tecnologia mas usada es ' + techFound[0].tool + ' (mencionada ' + techFound[0].frequency + ' veces)',
-                    category: 'tecnico',
-                    importance: 'alta'
-                });
-            }
-
-            if (mainTopics.length > 0) {
-                insights.push({
-                    insight: 'Tu area principal de interes es "' + mainTopics[0].topic + '"',
-                    category: 'profesional',
-                    importance: 'alta'
-                });
-            }
-
-            if (chatData.chats.length >= 3) {
-                var avgWords = Math.round(chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0) / chatData.chats.length);
-                insights.push({
-                    insight: 'Promedio de ' + avgWords.toLocaleString() + ' palabras por conversacion',
-                    category: 'personal',
-                    importance: 'media'
-                });
-            }
-
-            if (techFound.length > 5) {
-                insights.push({
-                    insight: 'Manejas ' + techFound.length + ' tecnologias diferentes — perfil versatil',
-                    category: 'profesional',
-                    importance: 'media'
-                });
-            }
-
-            // 5. Evolution
-            var focusAreas = mainTopics.slice(0, 4).map(function(t) { return t.topic; });
-            var totalWords = chatData.chats.reduce(function(s, c) { return s + c.wordCount; }, 0);
-
-            var evolution = {
-                progressionPattern: chatData.chats.length >= 3
-                    ? 'Patron detectado en ' + chatData.chats.length + ' conversaciones con ' + totalWords.toLocaleString() + ' palabras totales'
-                    : 'Agrega mas chats para detectar patrones de evolucion',
-                skillDevelopment: techFound.length > 0
-                    ? 'Enfoque principal en: ' + techFound.slice(0, 3).map(function(t) { return t.tool; }).join(', ')
-                    : 'Aun no se detectan tecnologias especificas',
-                focusAreas: focusAreas.length > 0 ? focusAreas : ['General'],
-                queryBreakdown: queryTypeCounts
-            };
-
-            // 6. Summary
-            var summary = 'Analisis local de ' + chatData.chats.length + ' conversacion(es) con ' + totalWords.toLocaleString() + ' palabras. ';
-            if (techFound.length > 0) summary += techFound.length + ' tecnologias detectadas. ';
-            if (mainTopics.length > 0) summary += 'Temas principales: ' + mainTopics.slice(0, 3).map(function(t) { return t.topic; }).join(', ') + '. ';
-            summary += 'Analisis 100% local — ningun dato salio de tu navegador.';
-
-            return {
-                projects: projects,
-                mainTopics: mainTopics,
-                insights: insights,
-                tools: techFound,
-                evolution: evolution,
-                summary: summary
-            };
-        }
-
-        // ── Processing ──
-        async function startProcessing() {
-            if (chatData.chats.length === 0) {
-                showStatus('Primero carga algunos chats', 'error');
-                return;
-            }
-
-            var btn = document.getElementById('processBtn');
-            var prog = document.getElementById('processingProgress');
-            var fill = document.getElementById('progressFill');
-            var text = document.getElementById('progressText');
-
-            btn.disabled = true;
-            prog.classList.remove('hidden');
-
-            text.textContent = 'Analizando contenido...';
-            fill.style.width = '30%';
-
-            await new Promise(function(r) { setTimeout(r, 200); });
-
-            chatData.analysis = analyzeLocally();
-
-            fill.style.width = '80%';
-            text.textContent = 'Generando resultados...';
-
-            await new Promise(function(r) { setTimeout(r, 200); });
-
-            saveData();
-            updateStats();
-            displayResults();
-
-            fill.style.width = '100%';
-            text.textContent = 'Analisis completado';
-
-            setTimeout(function() {
-                prog.classList.add('hidden');
-                btn.disabled = false;
-                var resultsTab = document.querySelector('[data-tab="results"]');
-                showTab('results', resultsTab);
-            }, 500);
-        }
-
-        // ── Display results ──
-        function displayResults() {
-            var div = document.getElementById('analysisResults');
-            var a = chatData.analysis;
-
-            if (!a) {
-                div.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">Ejecuta el analisis primero</p>';
-                return;
-            }
-
-            var html = '';
-
-            // Summary
-            html += '<div class="analysis-section">';
-            html += '<div class="analysis-title">Resumen</div>';
-            html += '<p>' + esc(a.summary) + '</p>';
-            html += '</div>';
-
-            // Projects
-            if (a.projects.length > 0) {
-                html += '<div class="analysis-section">';
-                html += '<div class="analysis-title">Proyectos Detectados (' + a.projects.length + ')</div>';
-                a.projects.forEach(function(p) {
-                    html += '<div class="result-item">';
-                    html += '<h4 style="color:var(--accent);margin-bottom:8px;">' + esc(p.name) + '</h4>';
-                    html += '<p style="margin-bottom:8px;">' + esc(p.description) + '</p>';
-                    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
-                    html += '<span class="status-tag">' + esc(p.status) + '</span>';
-                    p.technologies.forEach(function(tech) {
-                        html += '<span class="tech-tag">' + esc(tech) + '</span>';
-                    });
-                    html += '</div></div>';
-                });
-                html += '</div>';
-            }
-
-            // Topics
-            if (a.mainTopics.length > 0) {
-                html += '<div class="analysis-section">';
-                html += '<div class="analysis-title">Temas Principales</div>';
-                a.mainTopics.forEach(function(topic) {
-                    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:10px;border-radius:8px;" class="result-item">';
-                    html += '<span><strong>' + esc(topic.topic) + '</strong>';
-                    if (topic.relatedChats.length > 0) {
-                        html += '<br><small style="color:var(--text-muted);">En: ' + topic.relatedChats.map(esc).join(', ') + '</small>';
-                    }
-                    html += '</span>';
-                    html += '<span class="freq-badge">' + topic.frequency + ' chat(s)</span>';
-                    html += '</div>';
-                });
-                html += '</div>';
-            }
-
-            // Insights
-            if (a.insights.length > 0) {
-                html += '<div class="analysis-section">';
-                html += '<div class="analysis-title">Insights</div>';
-                a.insights.forEach(function(ins) {
-                    var borderColor = ins.importance === 'alta' ? 'var(--importance-high)' : ins.importance === 'media' ? 'var(--importance-med)' : 'var(--importance-low)';
-                    html += '<div class="result-item" style="border-left:4px solid ' + borderColor + ';">';
-                    html += '<strong>' + esc(ins.insight) + '</strong>';
-                    html += '<div style="font-size:0.8em;color:var(--text-muted);margin-top:5px;">';
-                    html += esc(ins.category) + ' &middot; ' + esc(ins.importance);
-                    html += '</div></div>';
-                });
-                html += '</div>';
-            }
-
-            // Tools
-            if (a.tools.length > 0) {
-                html += '<div class="analysis-section">';
-                html += '<div class="analysis-title">Tecnologias Detectadas (' + a.tools.length + ')</div>';
-                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">';
-                a.tools.forEach(function(tool) {
-                    html += '<div class="result-item" style="text-align:center;padding:12px;">';
-                    html += '<h4 style="color:var(--accent);margin-bottom:6px;">' + esc(tool.tool) + '</h4>';
-                    html += '<div class="status-tag">' + tool.frequency + ' mencion(es)</div>';
-                    html += '</div>';
-                });
-                html += '</div></div>';
-            }
-
-            // Evolution
-            html += '<div class="analysis-section">';
-            html += '<div class="analysis-title">Patrones y Evolucion</div>';
-            html += '<div class="result-item" style="padding:20px;">';
-            html += '<p style="margin-bottom:12px;">' + esc(a.evolution.progressionPattern) + '</p>';
-            html += '<p style="margin-bottom:12px;">' + esc(a.evolution.skillDevelopment) + '</p>';
-            if (a.evolution.focusAreas.length > 0) {
-                html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">';
-                a.evolution.focusAreas.forEach(function(area) {
-                    html += '<span class="focus-tag">' + esc(area) + '</span>';
-                });
-                html += '</div>';
-            }
-            if (a.evolution.queryBreakdown && Object.keys(a.evolution.queryBreakdown).length > 0) {
-                html += '<h4 style="color:var(--accent);margin:16px 0 8px;">Tipos de Consulta</h4>';
-                Object.keys(a.evolution.queryBreakdown).sort(function(x, y) {
-                    return a.evolution.queryBreakdown[y] - a.evolution.queryBreakdown[x];
-                }).forEach(function(qt) {
-                    html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">';
-                    html += '<span>' + esc(qt) + '</span>';
-                    html += '<span class="freq-badge">' + a.evolution.queryBreakdown[qt] + '</span>';
-                    html += '</div>';
-                });
-            }
-            html += '</div></div>';
-
-            div.innerHTML = html;
-        }
-
-        // ── Exports ──
-        function exportJSON() {
-            if (!chatData.analysis) {
-                showStatus('Ejecuta el analisis primero', 'error');
-                return;
-            }
-            var data = {
-                metadata: {
-                    exportDate: new Date().toISOString(),
-                    totalChats: chatData.chats.length,
-                    version: '2.0',
-                    method: 'local-analysis'
-                },
-                chats: chatData.chats.map(function(c) {
-                    return { id: c.id, title: c.title, wordCount: c.wordCount, addedAt: c.addedAt };
-                }),
-                analysis: chatData.analysis
-            };
-            downloadFile(JSON.stringify(data, null, 2), 'claude-analysis.json', 'application/json');
-        }
-
-        function csvEscape(val) {
-            var s = String(val == null ? '' : val);
-            if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
-                return '"' + s.replace(/"/g, '""') + '"';
-            }
-            return s;
-        }
-
-        function exportCSV() {
-            if (!chatData.analysis) {
-                showStatus('Ejecuta el analisis primero', 'error');
-                return;
-            }
-            var rows = [['Categoria', 'Nombre', 'Detalle', 'Frecuencia']];
-
-            (chatData.analysis.tools || []).forEach(function(t) {
-                rows.push(['Tecnologia', t.tool, t.usage, t.frequency]);
-            });
-            (chatData.analysis.mainTopics || []).forEach(function(t) {
-                rows.push(['Tema', t.topic, t.relatedChats.join('; '), t.frequency]);
-            });
-            (chatData.analysis.projects || []).forEach(function(p) {
-                rows.push(['Proyecto', p.name, p.technologies.join('; '), '']);
-            });
-            (chatData.analysis.insights || []).forEach(function(i) {
-                rows.push(['Insight', i.insight, i.category, i.importance]);
-            });
-
-            var csv = rows.map(function(row) { return row.map(csvEscape).join(','); }).join('\n');
-            downloadFile('﻿' + csv, 'claude-analysis.csv', 'text/csv;charset=utf-8');
-        }
-
-        function downloadFile(content, filename, mimeType) {
-            var blob = new Blob([content], { type: mimeType });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
-        }
-
-        // ── Status messages ──
-        function showStatus(message, type) {
-            var div = document.getElementById('uploadStatus');
-            div.className = type;
-            div.innerHTML = type === 'success' ? message : esc(message);
-            div.classList.remove('hidden');
-            setTimeout(function() { div.classList.add('hidden'); }, 5000);
-        }
-
-        // ── Init ──
-        updateChatsList();
+    function done() {
+        if (ok + skip < total) return;
+        D.analysis = null;
+        save();
+        renderList();
         updateStats();
-        if (chatData.analysis) displayResults();
-    </script>
+        showMsg('addMsg', ok + ' archivo(s) cargado(s)' + (skip > 0 ? ', ' + skip + ' omitido(s)' : ''), ok > 0 ? 'ok' : 'err');
+    }
+}
+
+function parseJson(raw) {
+    try {
+        var d = JSON.parse(raw);
+        if (Array.isArray(d)) {
+            return d.map(function(m) {
+                return (m.role || m.sender || 'user') + ': ' + (m.content || m.text || m.message || '');
+            }).join('\n\n');
+        }
+        var msgs = d.messages || d.chat_messages;
+        if (Array.isArray(msgs)) {
+            return msgs.map(function(m) {
+                return (m.role || m.sender || 'user') + ': ' + (m.content || m.text || '');
+            }).join('\n\n');
+        }
+        if (d.content || d.text) return d.content || d.text;
+        return raw;
+    } catch(e) { return raw; }
+}
+
+// ── Analysis engine ──
+var TECHS = {
+    'Python': /\bpython\b/i, 'JavaScript': /\bjavascript\b|\bJS\b|\bnode\.?js\b/i,
+    'TypeScript': /\btypescript\b/i, 'React': /\breact\b|\bjsx\b/i,
+    'Vue': /\bvue\b|\bnuxt\b/i, 'Angular': /\bangular\b/i,
+    'Next.js': /\bnext\.?js\b/i, 'HTML': /\bhtml\b/i,
+    'CSS': /\bcss\b|\btailwind\b|\bbootstrap\b|\bsass\b/i,
+    'SQL': /\bsql\b|\bmysql\b|\bpostgres\b|\bsqlite\b/i,
+    'MongoDB': /\bmongo\b/i, 'Docker': /\bdocker\b/i,
+    'Git': /\bgit\b|\bgithub\b/i, 'AWS': /\baws\b|\bs3\b|\blambda\b/i,
+    'Firebase': /\bfirebase\b/i, 'PHP': /\bphp\b|\blaravel\b|\bwordpress\b/i,
+    'Java': /\bjava\b(?!script)/i, 'C#': /\bc#\b|\.net\b/i,
+    'Ruby': /\bruby\b|\brails\b/i, 'Go': /\bgolang\b/i,
+    'Rust': /\brust\b|\bcargo\b/i, 'Swift': /\bswift\b/i,
+    'Flutter': /\bflutter\b|\bdart\b/i, 'React Native': /\breact\s*native\b/i,
+    'Django': /\bdjango\b/i, 'Flask': /\bflask\b/i,
+    'FastAPI': /\bfastapi\b/i, 'Express': /\bexpress\b/i,
+    'Redis': /\bredis\b/i, 'GraphQL': /\bgraphql\b/i,
+    'API REST': /\brest\s*api\b|\bapi\s*rest\b|\bendpoint\b/i,
+    'Kubernetes': /\bkubernetes\b|\bk8s\b/i, 'Linux': /\blinux\b|\bbash\b/i,
+    'TensorFlow': /\btensorflow\b/i, 'PyTorch': /\bpytorch\b/i,
+    'Pandas': /\bpandas\b/i, 'Selenium': /\bselenium\b/i,
+    'Supabase': /\bsupabase\b/i, 'Stripe': /\bstripe\b/i,
+    'OpenAI': /\bopenai\b|\bgpt\b|\bchatgpt\b/i, 'Claude': /\bclaude\b|\banthropic\b/i,
+    'Vite': /\bvite\b/i, 'Webpack': /\bwebpack\b/i
+};
+
+var TOPICS = {
+    'Desarrollo Web': /\bweb\b|\bfrontend\b|\bbackend\b|\bpagina\b|\bsitio\b/i,
+    'Base de Datos': /\bbase\s*de\s*datos\b|\bdatabase\b|\bsql\b|\btabla\b/i,
+    'IA / Machine Learning': /\binteligencia\s*artificial\b|\bmachine\s*learning\b|\bmodelo\b|\bprompt\b|\bgpt\b|\bllm\b/i,
+    'Automatizacion': /\bautomati[zs]\b|\bscript\b|\bbot\b|\bscraping\b/i,
+    'Analisis de Datos': /\banalisis\b|\bdata\b|\bgrafica\b|\bvisuali[zs]\b|\bdashboard\b/i,
+    'Mobile': /\bmovil\b|\bmobile\b|\bandroid\b|\bios\b|\baplicacion\b/i,
+    'DevOps': /\bdevops\b|\bdeploy\b|\bci.?cd\b|\bservidor\b|\bcloud\b/i,
+    'Seguridad': /\bsegurid\b|\bsecurity\b|\bauth\b|\btoken\b|\bencript\b/i,
+    'API': /\bapi\b|\bendpoint\b|\brest\b|\bwebhook\b/i,
+    'Diseno UI': /\bdise[ñn]o\b|\bui\b|\bux\b|\binterfaz\b|\bestilo\b/i,
+    'Testing': /\btest\b|\bprueba\b|\bdebug\b|\bbug\b/i
+};
+
+var QTYPES = {
+    'Generar codigo': /\b(crea|genera|haz|escribe|programa|implementa|desarrolla)\b/i,
+    'Explicacion': /\b(explica|que\s+es|como\s+funciona|diferencia|significa)\b/i,
+    'Debug / Fix': /\b(error|bug|falla|no\s+funciona|corregir|arregla|problema)\b/i,
+    'Mejora': /\b(mejora|optimiz|refactor|rendimiento|rapido)\b/i,
+    'Configuracion': /\b(configura|instala|setup|deploy|conecta)\b/i
+};
+
+function analyze() {
+    var all = D.chats.map(function(c) { return c.content; }).join('\n\n');
+
+    // Techs
+    var techs = [];
+    Object.keys(TECHS).forEach(function(t) {
+        var re = new RegExp(TECHS[t].source, 'gi');
+        var m = all.match(re);
+        if (m) techs.push({ name: t, count: m.length });
+    });
+    techs.sort(function(a, b) { return b.count - a.count; });
+
+    // Topics
+    var topics = [];
+    var topicChats = {};
+    D.chats.forEach(function(chat) {
+        var txt = chat.title + ' ' + chat.content;
+        Object.keys(TOPICS).forEach(function(t) {
+            if (TOPICS[t].test(txt)) {
+                if (!topicChats[t]) topicChats[t] = [];
+                if (topicChats[t].indexOf(chat.title) < 0) topicChats[t].push(chat.title);
+            }
+        });
+    });
+    Object.keys(topicChats).forEach(function(t) {
+        topics.push({ name: t, count: topicChats[t].length, chats: topicChats[t] });
+    });
+    topics.sort(function(a, b) { return b.count - a.count; });
+
+    // Query types
+    var qtypes = {};
+    D.chats.forEach(function(chat) {
+        var parts = chat.content.split(/\b(?:Human|Usuario|User)\s*:/i);
+        parts.forEach(function(p) {
+            Object.keys(QTYPES).forEach(function(q) {
+                if (QTYPES[q].test(p)) qtypes[q] = (qtypes[q] || 0) + 1;
+            });
+        });
+    });
+
+    // Insights
+    var insights = [];
+    if (techs.length > 0) insights.push({ text: 'Tecnologia mas usada: ' + techs[0].name + ' (' + techs[0].count + ' menciones)', imp: 'alta' });
+    if (topics.length > 0) insights.push({ text: 'Area principal: ' + topics[0].name, imp: 'alta' });
+    var sortedQ = Object.keys(qtypes).sort(function(a, b) { return qtypes[b] - qtypes[a]; });
+    if (sortedQ.length > 0) insights.push({ text: 'Tipo de consulta mas comun: ' + sortedQ[0] + ' (' + qtypes[sortedQ[0]] + ' veces)', imp: 'alta' });
+    if (D.chats.length >= 2) {
+        var avg = Math.round(D.chats.reduce(function(s, c) { return s + c.words; }, 0) / D.chats.length);
+        insights.push({ text: 'Promedio: ' + avg.toLocaleString() + ' palabras por chat', imp: 'media' });
+    }
+    if (techs.length > 5) insights.push({ text: 'Perfil versatil: ' + techs.length + ' tecnologias diferentes', imp: 'media' });
+
+    var totalW = D.chats.reduce(function(s, c) { return s + c.words; }, 0);
+    var summary = 'Analisis de ' + D.chats.length + ' chat(s), ' + totalW.toLocaleString() + ' palabras. ';
+    if (techs.length > 0) summary += techs.length + ' tecnologias. ';
+    if (topics.length > 0) summary += 'Temas: ' + topics.slice(0, 3).map(function(t) { return t.name; }).join(', ') + '. ';
+    summary += '100% local.';
+
+    D.analysis = { techs: techs, topics: topics, qtypes: qtypes, insights: insights, summary: summary };
+    save();
+    updateStats();
+    renderResults();
+}
+
+// ── Render results ──
+function renderResults() {
+    var div = document.getElementById('results');
+    var a = D.analysis;
+    if (!a) { div.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Ejecuta el analisis primero</p>'; return; }
+
+    var h = '';
+
+    h += '<div class="section"><h3>Resumen</h3><p>' + E(a.summary) + '</p></div>';
+
+    if (a.techs.length > 0) {
+        h += '<div class="section"><h3>Tecnologias (' + a.techs.length + ')</h3>';
+        a.techs.forEach(function(t) {
+            h += '<span class="tag tag-tech">' + E(t.name) + ' (' + t.count + ')</span>';
+        });
+        h += '</div>';
+    }
+
+    if (a.topics.length > 0) {
+        h += '<div class="section"><h3>Temas</h3>';
+        a.topics.forEach(function(t) {
+            h += '<div class="bar-row"><div><b>' + E(t.name) + '</b>';
+            if (t.chats.length > 0) h += '<br><small style="color:#888">' + t.chats.map(E).join(', ') + '</small>';
+            h += '</div><span class="bar-badge">' + t.count + '</span></div>';
+        });
+        h += '</div>';
+    }
+
+    if (a.insights.length > 0) {
+        h += '<div class="section"><h3>Insights</h3>';
+        a.insights.forEach(function(ins) {
+            h += '<div class="insight-row"><b>' + E(ins.text) + '</b> <small>' + E(ins.imp) + '</small></div>';
+        });
+        h += '</div>';
+    }
+
+    if (Object.keys(a.qtypes).length > 0) {
+        h += '<div class="section"><h3>Tipos de Consulta</h3>';
+        Object.keys(a.qtypes).sort(function(x, y) { return a.qtypes[y] - a.qtypes[x]; }).forEach(function(q) {
+            h += '<div class="bar-row"><span>' + E(q) + '</span><span class="bar-badge">' + a.qtypes[q] + '</span></div>';
+        });
+        h += '</div>';
+    }
+
+    div.innerHTML = h;
+}
+
+// ── Exports ──
+function csvEsc(v) {
+    var s = String(v == null ? '' : v);
+    if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+}
+
+function dlFile(content, name, type) {
+    var blob = new Blob([content], { type: type });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+}
+
+function expJSON() {
+    if (!D.analysis) { alert('Ejecuta el analisis primero'); return; }
+    var out = {
+        fecha: new Date().toISOString(),
+        chats: D.chats.map(function(c) { return { titulo: c.title, palabras: c.words, fuente: c.source || 'manual' }; }),
+        analisis: D.analysis
+    };
+    dlFile(JSON.stringify(out, null, 2), 'analisis-claude.json', 'application/json');
+}
+
+function expCSV() {
+    if (!D.analysis) { alert('Ejecuta el analisis primero'); return; }
+    var rows = [['Tipo', 'Nombre', 'Detalle', 'Cantidad']];
+    (D.analysis.techs || []).forEach(function(t) { rows.push(['Tecnologia', t.name, '', t.count]); });
+    (D.analysis.topics || []).forEach(function(t) { rows.push(['Tema', t.name, t.chats.join('; '), t.count]); });
+    (D.analysis.insights || []).forEach(function(i) { rows.push(['Insight', i.text, i.imp, '']); });
+    var csv = rows.map(function(r) { return r.map(csvEsc).join(','); }).join('\n');
+    dlFile('﻿' + csv, 'analisis-claude.csv', 'text/csv;charset=utf-8');
+}
+
+// ── Messages ──
+function showMsg(id, text, type) {
+    var d = document.getElementById(id);
+    d.className = type === 'ok' ? 'msg msg-ok' : 'msg msg-err';
+    d.innerHTML = text;
+    d.style.display = 'block';
+    setTimeout(function() { d.style.display = 'none'; }, 4000);
+}
+
+// ── Button listeners ──
+document.getElementById('btnAdd').onclick = addChat;
+document.getElementById('btnClearAll').onclick = function() {
+    if (!confirm('Borrar TODOS los chats?')) return;
+    D.chats = [];
+    D.analysis = null;
+    save();
+    renderList();
+    updateStats();
+};
+document.getElementById('btnAnalyze').onclick = function() {
+    if (D.chats.length === 0) { showMsg('analyzeMsg', 'Carga chats primero', 'err'); return; }
+    analyze();
+    showMsg('analyzeMsg', 'Analisis completado', 'ok');
+    setTimeout(function() { switchTab(2); }, 500);
+};
+document.getElementById('btnJSON').onclick = expJSON;
+document.getElementById('btnCSV').onclick = expCSV;
+document.getElementById('btnPrint').onclick = function() { window.print(); };
+document.getElementById('btnNuke').onclick = function() {
+    if (!confirm('Borrar TODOS los datos permanentemente?')) return;
+    D = { chats: [], analysis: null };
+    localStorage.removeItem(KEY);
+    renderList();
+    updateStats();
+    document.getElementById('results').innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Datos borrados</p>';
+};
+
+// ── Ollama ──
+var ollamaUrl = 'http://localhost:11434';
+var ollamaModel = '';
+var ollamaConnected = false;
+
+document.getElementById('btnOllamaConnect').onclick = function() {
+    var statusEl = document.getElementById('ollamaStatus');
+    var btn = document.getElementById('btnOllamaConnect');
+    statusEl.textContent = 'Conectando...';
+    statusEl.className = 'ollama-status ollama-off';
+    btn.disabled = true;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', ollamaUrl + '/api/tags', true);
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                var models = data.models || [];
+                if (models.length === 0) {
+                    statusEl.textContent = 'Sin modelos';
+                    statusEl.className = 'ollama-status ollama-off';
+                    btn.disabled = false;
+                    alert('Ollama esta corriendo pero no tiene modelos.\nAbre terminal y ejecuta:\n\nollama pull llama3.2');
+                    return;
+                }
+                ollamaConnected = true;
+                statusEl.textContent = 'Conectado';
+                statusEl.className = 'ollama-status ollama-on';
+                btn.textContent = 'Reconectar';
+                btn.disabled = false;
+
+                var listEl = document.getElementById('ollamaModelList');
+                listEl.innerHTML = '';
+                models.forEach(function(m) {
+                    var b = document.createElement('button');
+                    b.className = 'ollama-model-btn';
+                    b.textContent = m.name;
+                    b.onclick = function() {
+                        ollamaModel = m.name;
+                        var all = listEl.querySelectorAll('button');
+                        for (var i = 0; i < all.length; i++) all[i].className = 'ollama-model-btn';
+                        b.className = 'ollama-model-btn selected';
+                    };
+                    listEl.appendChild(b);
+                });
+                if (models.length > 0 && !ollamaModel) {
+                    ollamaModel = models[0].name;
+                    listEl.children[0].className = 'ollama-model-btn selected';
+                }
+
+                document.getElementById('ollamaModels').style.display = 'block';
+                document.getElementById('ollamaActions').style.display = 'block';
+            } catch(e) {
+                statusEl.textContent = 'Error';
+                statusEl.className = 'ollama-status ollama-off';
+                btn.disabled = false;
+            }
+        } else {
+            statusEl.textContent = 'Error ' + xhr.status;
+            statusEl.className = 'ollama-status ollama-off';
+            btn.disabled = false;
+        }
+    };
+    xhr.onerror = function() {
+        statusEl.textContent = 'No encontrado';
+        statusEl.className = 'ollama-status ollama-off';
+        btn.disabled = false;
+        alert('No se pudo conectar a Ollama.\n\n1. Descarga Ollama de ollama.com\n2. Instala y abrelo\n3. Ejecuta: ollama pull llama3.2\n4. Vuelve aqui y haz click en Conectar');
+    };
+    xhr.ontimeout = xhr.onerror;
+    xhr.send();
+};
+
+function ollamaSend(prompt, resultId) {
+    if (!ollamaConnected || !ollamaModel) {
+        alert('Conecta a Ollama primero');
+        return;
+    }
+    if (D.chats.length === 0) {
+        alert('Carga chats primero');
+        return;
+    }
+
+    var resDiv = document.getElementById(resultId);
+    resDiv.innerHTML = '<div style="padding:20px;text-align:center;"><span class="spinner"></span> Analizando con ' + E(ollamaModel) + '...</div>';
+
+    var chatSummary = D.chats.map(function(c, i) {
+        var preview = c.content.slice(0, 2000);
+        return 'Chat ' + (i + 1) + ': "' + c.title + '" (' + c.words + ' palabras)\n' + preview;
+    }).join('\n\n---\n\n');
+
+    if (chatSummary.length > 12000) chatSummary = chatSummary.slice(0, 12000) + '\n\n[...truncado]';
+
+    var fullPrompt = prompt + '\n\nDatos de los chats del usuario:\n\n' + chatSummary;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ollamaUrl + '/api/generate', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 120000;
+
+    var body = JSON.stringify({
+        model: ollamaModel,
+        prompt: fullPrompt,
+        stream: false
+    });
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                var response = data.response || 'Sin respuesta';
+                resDiv.innerHTML = '<div class="ai-response"><b>Respuesta de ' + E(ollamaModel) + ':</b>\n\n' + E(response) + '</div>';
+            } catch(e) {
+                resDiv.innerHTML = '<div class="msg msg-err">Error al procesar la respuesta</div>';
+            }
+        } else {
+            resDiv.innerHTML = '<div class="msg msg-err">Error del servidor: ' + xhr.status + '</div>';
+        }
+    };
+    xhr.onerror = function() {
+        resDiv.innerHTML = '<div class="msg msg-err">Error de conexion. Verifica que Ollama siga corriendo.</div>';
+    };
+    xhr.ontimeout = function() {
+        resDiv.innerHTML = '<div class="msg msg-err">Tiempo agotado. Intenta con un prompt mas corto o un modelo mas ligero.</div>';
+    };
+    xhr.send(body);
+}
+
+document.getElementById('btnOllamaAnalyze').onclick = function() {
+    var custom = document.getElementById('ollamaPrompt').value.trim();
+    var prompt = custom || 'Analiza estas conversaciones de Claude AI. Identifica:\n1. Tecnologias y herramientas principales\n2. Temas y areas de interes\n3. Patrones de uso (que tipo de preguntas hace el usuario)\n4. Nivel de experiencia estimado\n5. Recomendaciones personalizadas\n\nResponde en espanol.';
+    ollamaSend(prompt, 'ollamaResult');
+};
+
+document.getElementById('btnOllamaSummary').onclick = function() {
+    ollamaSend('Haz un resumen ejecutivo breve de estas conversaciones de Claude AI. Maximo 5 puntos clave. Responde en espanol.', 'ollamaResult');
+};
+
+document.getElementById('btnOllamaAdvice').onclick = function() {
+    ollamaSend('Basandote en estas conversaciones, da 5 consejos practicos para que el usuario mejore su productividad con Claude AI. Se especifico y da ejemplos. Responde en espanol.', 'ollamaResult');
+};
+
+// ── Init ──
+buildTabs();
+renderList();
+updateStats();
+if (D.analysis) renderResults();
+</script>
+
 </body>
 </html>
