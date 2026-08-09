@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Chats Claude</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #f5f5f5; color: #333; }
+        .app { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header h1 { color: #e65100; font-size: 24px; margin-bottom: 5px; }
+        .header p { color: #888; font-size: 14px; }
+
+        .privacy {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tabs button {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .tabs button.on {
+            background: #e65100;
+            color: #fff;
+            border-color: #e65100;
+        }
+
+        .panel { display: none; }
+        .panel.on { display: block; }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #333; }
+        .card h3 { font-size: 16px; margin: 20px 0 10px; color: #555; }
+
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
+
+        input[type=text], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 12px;
+        }
+        input[type=text]:focus, textarea:focus { outline: none; border-color: #e65100; }
+
+        .btn {
+            background: #e65100;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .btn:hover { background: #bf360c; }
+        .btn-red { background: #c62828; }
+        .btn-red:hover { background: #b71c1c; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+        .drop {
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+        .drop:hover, .drop.over { border-color: #e65100; background: #fff3e0; }
+        .drop h3 { color: #e65100; margin: 0 0 8px; font-size: 16px; }
+        .drop p { color: #888; font-size: 13px; margin: 0; }
+
+        .divider {
+            text-align: center;
+            color: #aaa;
+            font-size: 13px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #ddd;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .msg { padding: 10px 15px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+        .msg-ok { background: #e8f5e9; color: #2e7d32; }
+        .msg-err { background: #ffebee; color: #c62828; }
+
+        .chat-row {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #e65100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-row b { font-size: 14px; }
+        .chat-row small { color: #888; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat {
+            background: #e65100;
+            color: #fff;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat .num { font-size: 28px; font-weight: bold; }
+        .stat .lbl { font-size: 12px; margin-top: 4px; }
+
+        .section {
+            background: #fff8f0;
+            border: 1px solid #ffe0b2;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .section h3 { color: #e65100; font-size: 16px; margin-bottom: 12px; }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 3px;
+        }
+        .tag-tech { background: #e3f2fd; color: #1565c0; }
+        .tag-topic { background: #f3e5f5; color: #7b1fa2; }
+        .tag-focus { background: #e8f5e9; color: #2e7d32; }
+
+        .bar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+        .bar-badge {
+            background: #e65100;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .insight-row {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background: #f9f9f9;
+            border-left: 4px solid #4caf50;
+        }
+        .insight-row small { color: #888; }
+
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .export-box {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #e65100;
+            border-radius: 12px;
+        }
+        .export-box h3 { font-size: 15px; margin-bottom: 8px; }
+        .export-box p { font-size: 13px; color: #888; margin-bottom: 12px; }
+
+        ul, ol { margin-left: 20px; line-height: 1.8; }
+
+        .file-ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .ollama-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .ollama-on { background: #e8f5e9; color: #2e7d32; }
+        .ollama-off { background: #ffebee; color: #c62828; }
+
+        .ollama-box {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .ollama-model-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .ollama-model-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .ollama-model-btn.selected {
+            border-color: #e65100;
+            background: #fff3e0;
+            color: #e65100;
+            font-weight: bold;
+        }
+
+        .ai-response {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #ddd;
+            border-top-color: #e65100;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Onboarding ── */
+        .welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        .welcome-box {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 90%;
+            padding: 40px 35px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.5s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .welcome-box .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e65100, #ff8f00);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: #fff;
+        }
+        .welcome-box h1 {
+            font-size: 24px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .welcome-box .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-box .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .welcome-box .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+        .welcome-box .step-dot.active {
+            background: #e65100;
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .welcome-box .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .welcome-box .feat {
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+        .welcome-box .feat b {
+            display: block;
+            color: #e65100;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .w-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .w-input:focus {
+            outline: none;
+            border-color: #e65100;
+        }
+
+        .w-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        .w-btn:hover { transform: scale(1.02); }
+        .w-btn:active { transform: scale(0.98); }
+
+        .w-btn-primary {
+            background: linear-gradient(135deg, #e65100, #ff8f00);
+            color: #fff;
+        }
+        .w-btn-outline {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            color: #333;
+        }
+        .w-btn-outline:hover { border-color: #e65100; }
+        .w-btn-skip {
+            background: none;
+            color: #aaa;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .os-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .os-card:hover, .os-card.detected {
+            border-color: #e65100;
+            background: #fff3e0;
+        }
+        .os-card .os-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .os-card .os-cmd {
+            background: #1a1a2e;
+            color: #4ade80;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: left;
+        }
+        .os-badge {
+            display: inline-block;
+            background: #e65100;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .privacy-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .privacy-pill {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        @media print {
+            .tabs, .btn, .drop, .privacy, .divider, .welcome-overlay { display: none !important; }
+            .panel { display: block !important; }
+            .card { box-shadow: none; border: 1px solid #ddd; }
+        }
+
+        @media (max-width: 600px) {
+            .app { padding: 10px; }
+            .header h1 { font-size: 20px; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .welcome-box { padding: 25px 20px; }
+            .welcome-box .features { grid-template-columns: 1fr; }
+            .welcome-box h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── ONBOARDING ── -->
+<div class="welcome-overlay" id="welcomeOverlay" style="display:none">
+    <div class="welcome-box" id="welcomeBox">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
+    <div class="privacy">
+        <b>100% Privado</b> — Tus datos nunca salen de tu navegador. No hay servidor, no hay API, no hay tracking. Todo se procesa en tu maquina.
+    </div>
+
+    <div class="header">
+        <h1>Analizador de Chats Claude</h1>
+        <p>Analiza tus conversaciones &mdash; 100% offline y privado</p>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <!-- TAB 1: CARGAR -->
+    <div class="panel on" id="p-cargar">
+        <div class="card">
+            <h2>Cargar Chats</h2>
+
+            <div class="drop" id="dropZone">
+                <h3>Arrastra archivos aqui o haz click</h3>
+                <p>Carga desde USB (D:, E:) o cualquier carpeta</p>
+                <p>.txt .md .json .log .csv .html &mdash; hasta 50 archivos</p>
+                <input type="file" id="fileIn" style="display:none"
+                       accept=".txt,.md,.json,.log,.csv,.html,.text" multiple>
+            </div>
+            <div id="fileResults"></div>
+
+            <div class="divider">o pega el texto</div>
+
+            <label>Titulo:</label>
+            <input type="text" id="inTitle" placeholder="ej: Proyecto Web, Consulta Python...">
+
+            <label>Conversacion:</label>
+            <textarea id="inText" rows="10" placeholder="Pega tu conversacion aqui...&#10;&#10;Human: Hola&#10;Claude: Hola! En que te ayudo?"></textarea>
+
+            <button class="btn" id="btnAdd">Agregar Chat</button>
+            <div id="addMsg"></div>
+        </div>
+
+        <div class="card" id="listCard" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h2 style="margin:0">Chats Cargados</h2>
+                <button class="btn btn-red btn-sm" id="btnClearAll">Borrar Todo</button>
+            </div>
+            <div id="chatList"></div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ANALIZAR -->
+    <div class="panel" id="p-analizar">
+        <div class="card">
+            <h2>Analizar</h2>
+            <div class="stats">
+                <div class="stat"><div class="num" id="sChats">0</div><div class="lbl">CHATS</div></div>
+                <div class="stat"><div class="num" id="sWords">0</div><div class="lbl">PALABRAS</div></div>
+                <div class="stat"><div class="num" id="sMsgs">0</div><div class="lbl">MENSAJES</div></div>
+                <div class="stat"><div class="num" id="sTopics">0</div><div class="lbl">TEMAS</div></div>
+            </div>
+            <button class="btn" id="btnAnalyze">Iniciar Analisis</button>
+            <div id="analyzeMsg"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: RESULTADOS -->
+    <div class="panel" id="p-resultados">
+        <div class="card">
+            <h2>Resultados</h2>
+            <div id="results"><p style="text-align:center;color:#888;padding:30px;">Ejecuta el analisis primero</p></div>
+        </div>
+    </div>
+
+    <!-- TAB 4: EXPORTAR -->
+    <div class="panel" id="p-exportar">
+        <div class="card">
+            <h2>Exportar</h2>
+            <p style="color:#888;margin-bottom:15px;">Los archivos se crean en tu navegador. Nada se sube a internet.</p>
+            <div class="export-grid">
+                <div class="export-box">
+                    <h3>JSON</h3>
+                    <p>Analisis completo</p>
+                    <button class="btn btn-sm" id="btnJSON">Descargar</button>
+                </div>
+                <div class="export-box">
+                    <h3>CSV</h3>
+                    <p>Para Excel</p>
+                    <button class="btn btn-sm" id="btnCSV">Descargar</button>
+                </div>
+                <div class="export-box">
+                    <h3>Imprimir</h3>
+                    <p>Version impresa</p>
+                    <button class="btn btn-sm" id="btnPrint">Imprimir</button>
+                </div>
+            </div>
+            <div style="margin-top:25px;text-align:center;">
+                <button class="btn btn-red" id="btnNuke">Borrar Todos los Datos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: IA LOCAL -->
+    <div class="panel" id="p-ollama">
+        <div class="card">
+            <h2>IA Local (Ollama)</h2>
+            <p style="color:#888;margin-bottom:15px;">Conecta con Ollama en tu maquina para analisis con IA real. 100% privado — nada sale de tu PC.</p>
+
+            <div class="ollama-box">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <b>Estado:</b> <span class="ollama-status ollama-off" id="ollamaStatus">Desconectado</span>
+                    </div>
+                    <button class="btn btn-sm" id="btnOllamaConnect">Conectar</button>
+                </div>
+                <div id="ollamaModels" style="margin-top:12px;display:none;">
+                    <b>Modelos disponibles:</b>
+                    <div class="ollama-model-list" id="ollamaModelList"></div>
+                </div>
+            </div>
+
+            <div class="ollama-box" id="ollamaActions" style="display:none;">
+                <h3 style="margin-bottom:12px;">Analizar con IA</h3>
+                <p style="color:#888;font-size:13px;margin-bottom:12px;">Envia tus chats al modelo local para un analisis profundo con IA.</p>
+
+                <label>Pregunta personalizada (opcional):</label>
+                <input type="text" id="ollamaPrompt" placeholder="ej: Que patrones ves en mis consultas?">
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn" id="btnOllamaAnalyze">Analizar con IA</button>
+                    <button class="btn btn-sm" id="btnOllamaSummary" style="background:#4caf50;">Resumen Rapido</button>
+                    <button class="btn btn-sm" id="btnOllamaAdvice" style="background:#1565c0;">Consejos</button>
+                </div>
+                <div id="ollamaMsg"></div>
+                <div id="ollamaResult"></div>
+            </div>
+
+            <div class="card" style="margin-top:15px;background:#fff8f0;border:1px solid #ffe0b2;">
+                <h3 style="margin-bottom:8px;">Como instalar Ollama</h3>
+                <ol style="font-size:14px;">
+                    <li>Ve a <b>ollama.com</b> y descarga el instalador</li>
+                    <li>Instala y abrelo (se ejecuta en segundo plano)</li>
+                    <li>Abre terminal y ejecuta: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code></li>
+                    <li>Regresa aqui y haz click en <b>Conectar</b></li>
+                </ol>
+                <p style="font-size:12px;color:#888;margin-top:10px;">Ollama corre en tu maquina (localhost:11434). Ningun dato sale de tu PC.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: AYUDA -->
+    <div class="panel" id="p-ayuda">
+        <div class="card">
+            <h2>Ayuda</h2>
+            <h3>Como usar</h3>
+            <ol>
+                <li><b>Desde USB:</b> Arrastra archivos al area de carga o haz click para navegar a D:, E:, etc.</li>
+                <li><b>Pegar texto:</b> Copia chats de Claude y pegalos en el campo de texto</li>
+                <li>Ve a <b>Analizar</b> y haz click en el boton</li>
+                <li>Revisa <b>Resultados</b></li>
+                <li><b>Exporta</b> en JSON o CSV</li>
+            </ol>
+            <h3>Archivos soportados</h3>
+            <ul>
+                <li>.txt, .md, .json, .log, .csv, .html</li>
+                <li>Hasta 50 archivos a la vez, 2MB cada uno</li>
+                <li>JSON se parsea automaticamente (formato Claude, ChatGPT, etc.)</li>
+            </ul>
+            <h3>IA Local (Ollama)</h3>
+            <ul>
+                <li>Instala <b>Ollama</b> desde ollama.com (gratis, local)</li>
+                <li>Ejecuta <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code> para descargar un modelo</li>
+                <li>Haz click en <b>Conectar</b> en la tab "IA Local"</li>
+                <li>Ollama corre en tu maquina — ningun dato sale de tu PC</li>
+            </ul>
+            <h3>Privacidad</h3>
+            <ul>
+                <li>No hay servidor ni API — todo corre en tu navegador</li>
+                <li>Funciona sin internet (excepto IA Local que usa Ollama en localhost)</li>
+                <li>Datos guardados solo en tu maquina (localStorage)</li>
+                <li>Sin tracking, sin cookies, sin telemetria</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Escape HTML ──
+function E(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+}
+
+// ── Storage ──
+var KEY = 'claude-chats';
+var D = load();
+
+function load() {
+    try { var r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e) {}
+    return { chats: [], analysis: null };
+}
+function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e) {}
+}
+
+// ── Tabs ──
+var tabNames = ['Cargar', 'Analizar', 'Resultados', 'Exportar', 'IA Local', 'Ayuda'];
+var tabIds = ['p-cargar', 'p-analizar', 'p-resultados', 'p-exportar', 'p-ollama', 'p-ayuda'];
+
+function buildTabs() {
+    var c = document.getElementById('tabs');
+    c.innerHTML = '';
+    tabNames.forEach(function(name, i) {
+        var b = document.createElement('button');
+        b.textContent = name;
+        b.className = i === 0 ? 'on' : '';
+        b.onclick = function() { switchTab(i); };
+        c.appendChild(b);
+    });
+}
+
+function switchTab(idx) {
+    var btns = document.getElementById('tabs').children;
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = i === idx ? 'on' : '';
+    }
+    tabIds.forEach(function(id, i) {
+        document.getElementById(id).className = i === idx ? 'panel on' : 'panel';
+    });
+}
+
+// ── Make unique ID ──
+var idCounter = 0;
+function makeId() {
+    idCounter++;
+    return Date.now() + '-' + idCounter + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+// ── Add chat ──
+function addChat() {
+    var title = document.getElementById('inTitle').value.trim();
+    var text = document.getElementById('inText').value.trim();
+    if (!title || !text) { showMsg('addMsg', 'Escribe titulo y contenido', 'err'); return; }
+    if (text.length > 500000) { showMsg('addMsg', 'Maximo 500,000 caracteres', 'err'); return; }
+
+    D.chats.push({
+        id: makeId(),
+        title: title,
+        content: text,
+        words: text.split(/\s+/).filter(Boolean).length,
+        source: 'manual'
+    });
+    D.analysis = null;
+    save();
+    document.getElementById('inTitle').value = '';
+    document.getElementById('inText').value = '';
+    showMsg('addMsg', 'Chat "' + E(title) + '" agregado', 'ok');
+    renderList();
+    updateStats();
+}
+
+// ── Render chat list ──
+function renderList() {
+    var box = document.getElementById('listCard');
+    var c = document.getElementById('chatList');
+    if (D.chats.length === 0) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    c.innerHTML = '';
+    D.chats.forEach(function(chat, i) {
+        var row = document.createElement('div');
+        row.className = 'chat-row';
+
+        var info = document.createElement('div');
+        var b = document.createElement('b');
+        b.textContent = (i + 1) + '. ' + chat.title;
+        info.appendChild(b);
+
+        var sm = document.createElement('small');
+        sm.style.display = 'block';
+        var meta = chat.words.toLocaleString() + ' palabras';
+        if (chat.source === 'file' && chat.fileName) meta += ' | Archivo: ' + chat.fileName;
+        sm.textContent = meta;
+        info.appendChild(sm);
+
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-red btn-sm';
+        btn.textContent = 'X';
+        btn.onclick = function() {
+            if (!confirm('Borrar este chat?')) return;
+            D.chats = D.chats.filter(function(c) { return c.id !== chat.id; });
+            D.analysis = null;
+            save();
+            renderList();
+            updateStats();
+        };
+
+        row.appendChild(info);
+        row.appendChild(btn);
+        c.appendChild(row);
+    });
+}
+
+// ── Stats ──
+function updateStats() {
+    document.getElementById('sChats').textContent = D.chats.length;
+    var w = 0;
+    D.chats.forEach(function(c) { w += c.words; });
+    document.getElementById('sWords').textContent = w.toLocaleString();
+
+    var msgs = 0;
+    D.chats.forEach(function(c) {
+        var m = c.content.match(/\b(Human|Usuario|User|Claude|Assistant)\s*:/gi);
+        if (m) msgs += m.length;
+    });
+    document.getElementById('sMsgs').textContent = msgs;
+
+    var t = D.analysis && D.analysis.topics ? D.analysis.topics.length : 0;
+    document.getElementById('sTopics').textContent = t;
+}
+
+// ── File upload ──
+var dropZone = document.getElementById('dropZone');
+var fileIn = document.getElementById('fileIn');
+
+dropZone.onclick = function() { fileIn.click(); };
+dropZone.ondragover = function(e) { e.preventDefault(); dropZone.classList.add('over'); };
+dropZone.ondragleave = function(e) { e.preventDefault(); dropZone.classList.remove('over'); };
+dropZone.ondrop = function(e) {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    loadFiles(e.dataTransfer.files);
+};
+fileIn.onchange = function() { loadFiles(fileIn.files); fileIn.value = ''; };
+
+function loadFiles(files) {
+    if (!files || files.length === 0) return;
+    if (files.length > 50) { showMsg('addMsg', 'Maximo 50 archivos', 'err'); return; }
+
+    var ok = 0, skip = 0, total = files.length;
+    var resDiv = document.getElementById('fileResults');
+    resDiv.innerHTML = '';
+
+    Array.from(files).forEach(function(file) {
+        var name = file.name.toLowerCase();
+        var valid = ['.txt','.md','.json','.log','.csv','.html','.text'].some(function(e) { return name.endsWith(e); });
+
+        if (!valid || file.size > 2097152 || file.size === 0) {
+            skip++;
+            done();
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            var text = ev.target.result || '';
+
+            if (name.endsWith('.json')) text = parseJson(text);
+            if (name.endsWith('.html')) {
+                text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
+                text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
+                text = text.replace(/<[^>]+>/g, ' ');
+                text = text.replace(/\s{2,}/g, ' ').trim();
+            }
+
+            if (!text.trim()) { skip++; done(); return; }
+
+            D.chats.push({
+                id: makeId(),
+                title: file.name.replace(/\.[^.]+$/, ''),
+                content: text.slice(0, 500000),
+                words: text.split(/\s+/).filter(Boolean).length,
+                source: 'file',
+                fileName: file.name
+            });
+            ok++;
+
+            var d = document.createElement('div');
+            d.className = 'file-ok';
+            d.textContent = file.name + ' cargado';
+            resDiv.appendChild(d);
+            done();
+        };
+        reader.onerror = function() { skip++; done(); };
+        reader.readAsText(file, 'UTF-8');
+    });
+
+    function done() {
+        if (ok + skip < total) return;
+        D.analysis = null;
+        save();
+        renderList();
+        updateStats();
+        showMsg('addMsg', ok + ' archivo(s) cargado(s)' + (skip > 0 ? ', ' + skip + ' omitido(s)' : ''), ok > 0 ? 'ok' : 'err');
+    }
+}
+
+function parseJson(raw) {
+    try {
+        var d = JSON.parse(raw);
+        if (Array.isArray(d)) {
+            return d.map(function(m) {
+                return (m.role || m.sender || 'user') + ': ' + (m.content || m.text || m.message || '');
+            }).join('\n\n');
+        }
+        var msgs = d.messages || d.chat_messages;
+        if (Array.isArray(msgs)) {
+            return msgs.map(function(m) {
+                return (m.role || m.sender || 'user') + ': ' + (m.content || m.text || '');
+            }).join('\n\n');
+        }
+        if (d.content || d.text) return d.content || d.text;
+        return raw;
+    } catch(e) { return raw; }
+}
+
+// ── Analysis engine ──
+var TECHS = {
+    'Python': /\bpython\b/i, 'JavaScript': /\bjavascript\b|\bJS\b|\bnode\.?js\b/i,
+    'TypeScript': /\btypescript\b/i, 'React': /\breact\b|\bjsx\b/i,
+    'Vue': /\bvue\b|\bnuxt\b/i, 'Angular': /\bangular\b/i,
+    'Next.js': /\bnext\.?js\b/i, 'HTML': /\bhtml\b/i,
+    'CSS': /\bcss\b|\btailwind\b|\bbootstrap\b|\bsass\b/i,
+    'SQL': /\bsql\b|\bmysql\b|\bpostgres\b|\bsqlite\b/i,
+    'MongoDB': /\bmongo\b/i, 'Docker': /\bdocker\b/i,
+    'Git': /\bgit\b|\bgithub\b/i, 'AWS': /\baws\b|\bs3\b|\blambda\b/i,
+    'Firebase': /\bfirebase\b/i, 'PHP': /\bphp\b|\blaravel\b|\bwordpress\b/i,
+    'Java': /\bjava\b(?!script)/i, 'C#': /\bc#\b|\.net\b/i,
+    'Ruby': /\bruby\b|\brails\b/i, 'Go': /\bgolang\b/i,
+    'Rust': /\brust\b|\bcargo\b/i, 'Swift': /\bswift\b/i,
+    'Flutter': /\bflutter\b|\bdart\b/i, 'React Native': /\breact\s*native\b/i,
+    'Django': /\bdjango\b/i, 'Flask': /\bflask\b/i,
+    'FastAPI': /\bfastapi\b/i, 'Express': /\bexpress\b/i,
+    'Redis': /\bredis\b/i, 'GraphQL': /\bgraphql\b/i,
+    'API REST': /\brest\s*api\b|\bapi\s*rest\b|\bendpoint\b/i,
+    'Kubernetes': /\bkubernetes\b|\bk8s\b/i, 'Linux': /\blinux\b|\bbash\b/i,
+    'TensorFlow': /\btensorflow\b/i, 'PyTorch': /\bpytorch\b/i,
+    'Pandas': /\bpandas\b/i, 'Selenium': /\bselenium\b/i,
+    'Supabase': /\bsupabase\b/i, 'Stripe': /\bstripe\b/i,
+    'OpenAI': /\bopenai\b|\bgpt\b|\bchatgpt\b/i, 'Claude': /\bclaude\b|\banthropic\b/i,
+    'Vite': /\bvite\b/i, 'Webpack': /\bwebpack\b/i
+};
+
+var TOPICS = {
+    'Desarrollo Web': /\bweb\b|\bfrontend\b|\bbackend\b|\bpagina\b|\bsitio\b/i,
+    'Base de Datos': /\bbase\s*de\s*datos\b|\bdatabase\b|\bsql\b|\btabla\b/i,
+    'IA / Machine Learning': /\binteligencia\s*artificial\b|\bmachine\s*learning\b|\bmodelo\b|\bprompt\b|\bgpt\b|\bllm\b/i,
+    'Automatizacion': /\bautomati[zs]\b|\bscript\b|\bbot\b|\bscraping\b/i,
+    'Analisis de Datos': /\banalisis\b|\bdata\b|\bgrafica\b|\bvisuali[zs]\b|\bdashboard\b/i,
+    'Mobile': /\bmovil\b|\bmobile\b|\bandroid\b|\bios\b|\baplicacion\b/i,
+    'DevOps': /\bdevops\b|\bdeploy\b|\bci.?cd\b|\bservidor\b|\bcloud\b/i,
+    'Seguridad': /\bsegurid\b|\bsecurity\b|\bauth\b|\btoken\b|\bencript\b/i,
+    'API': /\bapi\b|\bendpoint\b|\brest\b|\bwebhook\b/i,
+    'Diseno UI': /\bdise[ñn]o\b|\bui\b|\bux\b|\binterfaz\b|\bestilo\b/i,
+    'Testing': /\btest\b|\bprueba\b|\bdebug\b|\bbug\b/i
+};
+
+var QTYPES = {
+    'Generar codigo': /\b(crea|genera|haz|escribe|programa|implementa|desarrolla)\b/i,
+    'Explicacion': /\b(explica|que\s+es|como\s+funciona|diferencia|significa)\b/i,
+    'Debug / Fix': /\b(error|bug|falla|no\s+funciona|corregir|arregla|problema)\b/i,
+    'Mejora': /\b(mejora|optimiz|refactor|rendimiento|rapido)\b/i,
+    'Configuracion': /\b(configura|instala|setup|deploy|conecta)\b/i
+};
+
+function analyze() {
+    var all = D.chats.map(function(c) { return c.content; }).join('\n\n');
+
+    // Techs
+    var techs = [];
+    Object.keys(TECHS).forEach(function(t) {
+        var re = new RegExp(TECHS[t].source, 'gi');
+        var m = all.match(re);
+        if (m) techs.push({ name: t, count: m.length });
+    });
+    techs.sort(function(a, b) { return b.count - a.count; });
+
+    // Topics
+    var topics = [];
+    var topicChats = {};
+    D.chats.forEach(function(chat) {
+        var txt = chat.title + ' ' + chat.content;
+        Object.keys(TOPICS).forEach(function(t) {
+            if (TOPICS[t].test(txt)) {
+                if (!topicChats[t]) topicChats[t] = [];
+                if (topicChats[t].indexOf(chat.title) < 0) topicChats[t].push(chat.title);
+            }
+        });
+    });
+    Object.keys(topicChats).forEach(function(t) {
+        topics.push({ name: t, count: topicChats[t].length, chats: topicChats[t] });
+    });
+    topics.sort(function(a, b) { return b.count - a.count; });
+
+    // Query types
+    var qtypes = {};
+    D.chats.forEach(function(chat) {
+        var parts = chat.content.split(/\b(?:Human|Usuario|User)\s*:/i);
+        parts.forEach(function(p) {
+            Object.keys(QTYPES).forEach(function(q) {
+                if (QTYPES[q].test(p)) qtypes[q] = (qtypes[q] || 0) + 1;
+            });
+        });
+    });
+
+    // Insights
+    var insights = [];
+    if (techs.length > 0) insights.push({ text: 'Tecnologia mas usada: ' + techs[0].name + ' (' + techs[0].count + ' menciones)', imp: 'alta' });
+    if (topics.length > 0) insights.push({ text: 'Area principal: ' + topics[0].name, imp: 'alta' });
+    var sortedQ = Object.keys(qtypes).sort(function(a, b) { return qtypes[b] - qtypes[a]; });
+    if (sortedQ.length > 0) insights.push({ text: 'Tipo de consulta mas comun: ' + sortedQ[0] + ' (' + qtypes[sortedQ[0]] + ' veces)', imp: 'alta' });
+    if (D.chats.length >= 2) {
+        var avg = Math.round(D.chats.reduce(function(s, c) { return s + c.words; }, 0) / D.chats.length);
+        insights.push({ text: 'Promedio: ' + avg.toLocaleString() + ' palabras por chat', imp: 'media' });
+    }
+    if (techs.length > 5) insights.push({ text: 'Perfil versatil: ' + techs.length + ' tecnologias diferentes', imp: 'media' });
+
+    var totalW = D.chats.reduce(function(s, c) { return s + c.words; }, 0);
+    var summary = 'Analisis de ' + D.chats.length + ' chat(s), ' + totalW.toLocaleString() + ' palabras. ';
+    if (techs.length > 0) summary += techs.length + ' tecnologias. ';
+    if (topics.length > 0) summary += 'Temas: ' + topics.slice(0, 3).map(function(t) { return t.name; }).join(', ') + '. ';
+    summary += '100% local.';
+
+    D.analysis = { techs: techs, topics: topics, qtypes: qtypes, insights: insights, summary: summary };
+    save();
+    updateStats();
+    renderResults();
+}
+
+// ── Render results ──
+function renderResults() {
+    var div = document.getElementById('results');
+    var a = D.analysis;
+    if (!a) { div.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Ejecuta el analisis primero</p>'; return; }
+
+    var h = '';
+
+    h += '<div class="section"><h3>Resumen</h3><p>' + E(a.summary) + '</p></div>';
+
+    if (a.techs.length > 0) {
+        h += '<div class="section"><h3>Tecnologias (' + a.techs.length + ')</h3>';
+        a.techs.forEach(function(t) {
+            h += '<span class="tag tag-tech">' + E(t.name) + ' (' + t.count + ')</span>';
+        });
+        h += '</div>';
+    }
+
+    if (a.topics.length > 0) {
+        h += '<div class="section"><h3>Temas</h3>';
+        a.topics.forEach(function(t) {
+            h += '<div class="bar-row"><div><b>' + E(t.name) + '</b>';
+            if (t.chats.length > 0) h += '<br><small style="color:#888">' + t.chats.map(E).join(', ') + '</small>';
+            h += '</div><span class="bar-badge">' + t.count + '</span></div>';
+        });
+        h += '</div>';
+    }
+
+    if (a.insights.length > 0) {
+        h += '<div class="section"><h3>Insights</h3>';
+        a.insights.forEach(function(ins) {
+            h += '<div class="insight-row"><b>' + E(ins.text) + '</b> <small>' + E(ins.imp) + '</small></div>';
+        });
+        h += '</div>';
+    }
+
+    if (Object.keys(a.qtypes).length > 0) {
+        h += '<div class="section"><h3>Tipos de Consulta</h3>';
+        Object.keys(a.qtypes).sort(function(x, y) { return a.qtypes[y] - a.qtypes[x]; }).forEach(function(q) {
+            h += '<div class="bar-row"><span>' + E(q) + '</span><span class="bar-badge">' + a.qtypes[q] + '</span></div>';
+        });
+        h += '</div>';
+    }
+
+    div.innerHTML = h;
+}
+
+// ── Exports ──
+function csvEsc(v) {
+    var s = String(v == null ? '' : v);
+    if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+}
+
+function dlFile(content, name, type) {
+    var blob = new Blob([content], { type: type });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+}
+
+function expJSON() {
+    if (!D.analysis) { alert('Ejecuta el analisis primero'); return; }
+    var out = {
+        fecha: new Date().toISOString(),
+        chats: D.chats.map(function(c) { return { titulo: c.title, palabras: c.words, fuente: c.source || 'manual' }; }),
+        analisis: D.analysis
+    };
+    dlFile(JSON.stringify(out, null, 2), 'analisis-claude.json', 'application/json');
+}
+
+function expCSV() {
+    if (!D.analysis) { alert('Ejecuta el analisis primero'); return; }
+    var rows = [['Tipo', 'Nombre', 'Detalle', 'Cantidad']];
+    (D.analysis.techs || []).forEach(function(t) { rows.push(['Tecnologia', t.name, '', t.count]); });
+    (D.analysis.topics || []).forEach(function(t) { rows.push(['Tema', t.name, t.chats.join('; '), t.count]); });
+    (D.analysis.insights || []).forEach(function(i) { rows.push(['Insight', i.text, i.imp, '']); });
+    var csv = rows.map(function(r) { return r.map(csvEsc).join(','); }).join('\n');
+    dlFile('﻿' + csv, 'analisis-claude.csv', 'text/csv;charset=utf-8');
+}
+
+// ── Messages ──
+function showMsg(id, text, type) {
+    var d = document.getElementById(id);
+    d.className = type === 'ok' ? 'msg msg-ok' : 'msg msg-err';
+    d.innerHTML = text;
+    d.style.display = 'block';
+    setTimeout(function() { d.style.display = 'none'; }, 4000);
+}
+
+// ── Button listeners ──
+document.getElementById('btnAdd').onclick = addChat;
+document.getElementById('btnClearAll').onclick = function() {
+    if (!confirm('Borrar TODOS los chats?')) return;
+    D.chats = [];
+    D.analysis = null;
+    save();
+    renderList();
+    updateStats();
+};
+document.getElementById('btnAnalyze').onclick = function() {
+    if (D.chats.length === 0) { showMsg('analyzeMsg', 'Carga chats primero', 'err'); return; }
+    analyze();
+    showMsg('analyzeMsg', 'Analisis completado', 'ok');
+    setTimeout(function() { switchTab(2); }, 500);
+};
+document.getElementById('btnJSON').onclick = expJSON;
+document.getElementById('btnCSV').onclick = expCSV;
+document.getElementById('btnPrint').onclick = function() { window.print(); };
+document.getElementById('btnNuke').onclick = function() {
+    if (!confirm('Borrar TODOS los datos permanentemente?\n(Incluye perfil — volveras a ver la pantalla de bienvenida)')) return;
+    D = { chats: [], analysis: null };
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(PROFILE_KEY);
+    profile = null;
+    renderList();
+    updateStats();
+    document.getElementById('results').innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Datos borrados</p>';
+};
+
+// ── Ollama ──
+var ollamaUrl = 'http://localhost:11434';
+var ollamaModel = '';
+var ollamaConnected = false;
+
+document.getElementById('btnOllamaConnect').onclick = function() {
+    var statusEl = document.getElementById('ollamaStatus');
+    var btn = document.getElementById('btnOllamaConnect');
+    statusEl.textContent = 'Conectando...';
+    statusEl.className = 'ollama-status ollama-off';
+    btn.disabled = true;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', ollamaUrl + '/api/tags', true);
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                var models = data.models || [];
+                if (models.length === 0) {
+                    statusEl.textContent = 'Sin modelos';
+                    statusEl.className = 'ollama-status ollama-off';
+                    btn.disabled = false;
+                    alert('Ollama esta corriendo pero no tiene modelos.\nAbre terminal y ejecuta:\n\nollama pull llama3.2');
+                    return;
+                }
+                ollamaConnected = true;
+                statusEl.textContent = 'Conectado';
+                statusEl.className = 'ollama-status ollama-on';
+                btn.textContent = 'Reconectar';
+                btn.disabled = false;
+
+                var listEl = document.getElementById('ollamaModelList');
+                listEl.innerHTML = '';
+                models.forEach(function(m) {
+                    var b = document.createElement('button');
+                    b.className = 'ollama-model-btn';
+                    b.textContent = m.name;
+                    b.onclick = function() {
+                        ollamaModel = m.name;
+                        var all = listEl.querySelectorAll('button');
+                        for (var i = 0; i < all.length; i++) all[i].className = 'ollama-model-btn';
+                        b.className = 'ollama-model-btn selected';
+                    };
+                    listEl.appendChild(b);
+                });
+                if (models.length > 0 && !ollamaModel) {
+                    ollamaModel = models[0].name;
+                    listEl.children[0].className = 'ollama-model-btn selected';
+                }
+
+                document.getElementById('ollamaModels').style.display = 'block';
+                document.getElementById('ollamaActions').style.display = 'block';
+            } catch(e) {
+                statusEl.textContent = 'Error';
+                statusEl.className = 'ollama-status ollama-off';
+                btn.disabled = false;
+            }
+        } else {
+            statusEl.textContent = 'Error ' + xhr.status;
+            statusEl.className = 'ollama-status ollama-off';
+            btn.disabled = false;
+        }
+    };
+    xhr.onerror = function() {
+        statusEl.textContent = 'No encontrado';
+        statusEl.className = 'ollama-status ollama-off';
+        btn.disabled = false;
+        alert('No se pudo conectar a Ollama.\n\n1. Descarga Ollama de ollama.com\n2. Instala y abrelo\n3. Ejecuta: ollama pull llama3.2\n4. Vuelve aqui y haz click en Conectar');
+    };
+    xhr.ontimeout = xhr.onerror;
+    xhr.send();
+};
+
+function ollamaSend(prompt, resultId) {
+    if (!ollamaConnected || !ollamaModel) {
+        alert('Conecta a Ollama primero');
+        return;
+    }
+    if (D.chats.length === 0) {
+        alert('Carga chats primero');
+        return;
+    }
+
+    var resDiv = document.getElementById(resultId);
+    resDiv.innerHTML = '<div style="padding:20px;text-align:center;"><span class="spinner"></span> Analizando con ' + E(ollamaModel) + '...</div>';
+
+    var chatSummary = D.chats.map(function(c, i) {
+        var preview = c.content.slice(0, 2000);
+        return 'Chat ' + (i + 1) + ': "' + c.title + '" (' + c.words + ' palabras)\n' + preview;
+    }).join('\n\n---\n\n');
+
+    if (chatSummary.length > 12000) chatSummary = chatSummary.slice(0, 12000) + '\n\n[...truncado]';
+
+    var fullPrompt = prompt + '\n\nDatos de los chats del usuario:\n\n' + chatSummary;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', ollamaUrl + '/api/generate', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 120000;
+
+    var body = JSON.stringify({
+        model: ollamaModel,
+        prompt: fullPrompt,
+        stream: false
+    });
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                var response = data.response || 'Sin respuesta';
+                resDiv.innerHTML = '<div class="ai-response"><b>Respuesta de ' + E(ollamaModel) + ':</b>\n\n' + E(response) + '</div>';
+            } catch(e) {
+                resDiv.innerHTML = '<div class="msg msg-err">Error al procesar la respuesta</div>';
+            }
+        } else {
+            resDiv.innerHTML = '<div class="msg msg-err">Error del servidor: ' + xhr.status + '</div>';
+        }
+    };
+    xhr.onerror = function() {
+        resDiv.innerHTML = '<div class="msg msg-err">Error de conexion. Verifica que Ollama siga corriendo.</div>';
+    };
+    xhr.ontimeout = function() {
+        resDiv.innerHTML = '<div class="msg msg-err">Tiempo agotado. Intenta con un prompt mas corto o un modelo mas ligero.</div>';
+    };
+    xhr.send(body);
+}
+
+document.getElementById('btnOllamaAnalyze').onclick = function() {
+    var custom = document.getElementById('ollamaPrompt').value.trim();
+    var prompt = custom || 'Analiza estas conversaciones de Claude AI. Identifica:\n1. Tecnologias y herramientas principales\n2. Temas y areas de interes\n3. Patrones de uso (que tipo de preguntas hace el usuario)\n4. Nivel de experiencia estimado\n5. Recomendaciones personalizadas\n\nResponde en espanol.';
+    ollamaSend(prompt, 'ollamaResult');
+};
+
+document.getElementById('btnOllamaSummary').onclick = function() {
+    ollamaSend('Haz un resumen ejecutivo breve de estas conversaciones de Claude AI. Maximo 5 puntos clave. Responde en espanol.', 'ollamaResult');
+};
+
+document.getElementById('btnOllamaAdvice').onclick = function() {
+    ollamaSend('Basandote en estas conversaciones, da 5 consejos practicos para que el usuario mejore su productividad con Claude AI. Se especifico y da ejemplos. Responde en espanol.', 'ollamaResult');
+};
+
+// ── Onboarding ──
+var PROFILE_KEY = 'claude-profile';
+var profile = loadProfile();
+
+function loadProfile() {
+    try { var r = localStorage.getItem(PROFILE_KEY); if (r) return JSON.parse(r); } catch(e) {}
+    return null;
+}
+function saveProfile(p) {
+    profile = p;
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e) {}
+}
+
+function detectOS() {
+    var ua = navigator.userAgent || '';
+    if (ua.indexOf('Win') >= 0) return 'windows';
+    if (ua.indexOf('Mac') >= 0) return 'mac';
+    if (ua.indexOf('Linux') >= 0) return 'linux';
+    return 'other';
+}
+
+var onboardStep = 0;
+
+function showOnboarding() {
+    document.getElementById('welcomeOverlay').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    renderStep();
+}
+
+function finishOnboarding() {
+    document.getElementById('welcomeOverlay').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    initApp();
+}
+
+function renderStep() {
+    var box = document.getElementById('welcomeBox');
+
+    if (onboardStep === 0) {
+        box.innerHTML =
+            '<div class="logo-icon">&#9881;</div>' +
+            '<h1>Analizador de Chats</h1>' +
+            '<p class="subtitle">Analiza tus conversaciones de IA de forma 100% privada</p>' +
+            '<div class="step-dots"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>' +
+            '<div class="features">' +
+                '<div class="feat"><b>Privado</b>Sin servidor, todo en tu navegador</div>' +
+                '<div class="feat"><b>Offline</b>Funciona sin internet</div>' +
+                '<div class="feat"><b>IA Local</b>Ollama para analisis con IA real</div>' +
+                '<div class="feat"><b>Exportar</b>JSON, CSV e imprimir</div>' +
+            '</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnStart">Comenzar</button>';
+
+        document.getElementById('wBtnStart').onclick = function() { onboardStep = 1; renderStep(); };
+        return;
+    }
+
+    if (onboardStep === 1) {
+        box.innerHTML =
+            '<div class="logo-icon">&#128100;</div>' +
+            '<h1>Tu Perfil</h1>' +
+            '<p class="subtitle">Se guarda solo en tu maquina, nunca se envia a internet</p>' +
+            '<div class="step-dots"><div class="step-dot"></div><div class="step-dot active"></div><div class="step-dot"></div></div>' +
+            '<input class="w-input" id="wName" placeholder="Tu nombre" autocomplete="name">' +
+            '<input class="w-input" id="wEmail" type="email" placeholder="Email (opcional)" autocomplete="email">' +
+            '<div class="privacy-pills">' +
+                '<span class="privacy-pill">Sin servidor</span>' +
+                '<span class="privacy-pill">Sin tracking</span>' +
+                '<span class="privacy-pill">100% local</span>' +
+            '</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnProfile">Guardar y Continuar</button>' +
+            '<button class="w-btn w-btn-skip" id="wBtnSkipProfile">Saltar este paso</button>';
+
+        document.getElementById('wBtnProfile').onclick = function() {
+            var name = document.getElementById('wName').value.trim();
+            var email = document.getElementById('wEmail').value.trim();
+            if (!name) { document.getElementById('wName').style.borderColor = '#c62828'; return; }
+            saveProfile({ name: name, email: email, created: new Date().toISOString() });
+            onboardStep = 2;
+            renderStep();
+        };
+        document.getElementById('wBtnSkipProfile').onclick = function() {
+            saveProfile({ name: 'Usuario', email: '', created: new Date().toISOString() });
+            onboardStep = 2;
+            renderStep();
+        };
+        return;
+    }
+
+    if (onboardStep === 2) {
+        var os = detectOS();
+        var winClass = os === 'windows' ? ' detected' : '';
+        var macClass = os === 'mac' ? ' detected' : '';
+        var linClass = os === 'linux' ? ' detected' : '';
+        var badge = '<span class="os-badge">Tu sistema</span>';
+
+        box.innerHTML =
+            '<div class="logo-icon">&#129302;</div>' +
+            '<h1>IA Local (Opcional)</h1>' +
+            '<p class="subtitle">Instala Ollama para analisis con IA real en tu PC</p>' +
+            '<div class="step-dots"><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot active"></div></div>' +
+            '<div id="ollamaCheck" style="margin-bottom:15px;"></div>' +
+            '<div class="os-card' + winClass + '" id="osWin">' +
+                '<div class="os-name">Windows' + (os === 'windows' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Descarga el instalador .exe</div>' +
+                '<div class="os-cmd">winget install Ollama.Ollama</div>' +
+            '</div>' +
+            '<div class="os-card' + macClass + '" id="osMac">' +
+                '<div class="os-name">macOS' + (os === 'mac' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Descarga la app .dmg</div>' +
+                '<div class="os-cmd">brew install ollama</div>' +
+            '</div>' +
+            '<div class="os-card' + linClass + '" id="osLinux">' +
+                '<div class="os-name">Linux' + (os === 'linux' ? badge : '') + '</div>' +
+                '<div style="color:#888;font-size:13px;">Un comando en terminal</div>' +
+                '<div class="os-cmd">curl -fsSL https://ollama.com/install.sh | sh</div>' +
+            '</div>' +
+            '<p style="font-size:12px;color:#888;margin:12px 0 5px;">Despues de instalar, ejecuta en terminal:</p>' +
+            '<div style="background:#1a1a2e;color:#4ade80;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:14px;margin-bottom:15px;text-align:left;">ollama pull llama3.2</div>' +
+            '<button class="w-btn w-btn-primary" id="wBtnFinish">Entrar a la App</button>' +
+            '<button class="w-btn w-btn-skip" id="wBtnSkipOllama">Ya lo tengo instalado</button>';
+
+        // Auto-check if Ollama is running
+        var checkDiv = document.getElementById('ollamaCheck');
+        var xhrCheck = new XMLHttpRequest();
+        xhrCheck.open('GET', 'http://localhost:11434/api/tags', true);
+        xhrCheck.timeout = 3000;
+        xhrCheck.onload = function() {
+            if (xhrCheck.status === 200) {
+                checkDiv.innerHTML = '<div style="background:#e8f5e9;color:#2e7d32;padding:12px;border-radius:10px;font-weight:bold;">Ollama detectado y funcionando en tu maquina</div>';
+            }
+        };
+        xhrCheck.onerror = function() {};
+        xhrCheck.ontimeout = function() {};
+        xhrCheck.send();
+
+        document.getElementById('wBtnFinish').onclick = function() { finishOnboarding(); };
+        document.getElementById('wBtnSkipOllama').onclick = function() { finishOnboarding(); };
+        return;
+    }
+}
+
+function initApp() {
+    buildTabs();
+    renderList();
+    updateStats();
+    if (D.analysis) renderResults();
+    updateProfileHeader();
+}
+
+function updateProfileHeader() {
+    if (!profile || !profile.name || profile.name === 'Usuario') return;
+    var hdr = document.querySelector('.header p');
+    if (hdr) hdr.textContent = 'Hola, ' + profile.name + ' — 100% offline y privado';
+}
+
+// ── Init ──
+if (profile) {
+    document.getElementById('mainApp').style.display = 'block';
+    initApp();
+} else {
+    showOnboarding();
+}
+</script>
+
+</body>
+</html>
